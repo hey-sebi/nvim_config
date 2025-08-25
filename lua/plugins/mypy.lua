@@ -1,0 +1,18 @@
+return {}
+-- -- Run linter on saving a file
+-- -- NOTE: This requires mypy to be installed in the python venv.
+--
+-- return {
+--   "mfussenegger/nvim-lint",
+--   opts = function(_, opts)
+--     opts.linters_by_ft = opts.linters_by_ft or {}
+--     opts.linters_by_ft.python = { "mypy" } -- alongside Ruff via LSP
+--     opts.linters = vim.tbl_deep_extend("force", opts.linters or {}, {
+--       mypy = {
+--         cmd = "mypy",
+--         stdin = false,
+--         args = { "--hide-error-codes", "--hide-error-context", "--show-column-numbers" },
+--       },
+--     })
+--   end,
+-- }
