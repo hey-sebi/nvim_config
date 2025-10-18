@@ -58,14 +58,14 @@ vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
   end
 end, { silent = true })
 
--- Optional alternative keys (avoid Tab if you prefer)
-vim.keymap.set({ "i", "s" }, "<C-k>", function()
+-- Optional alternative keys
+vim.keymap.set({ "i", "s" }, "<C-n>", function()
   if ls.expand_or_locally_jumpable() then
     ls.expand_or_jump()
   end
 end, { silent = true })
 
-vim.keymap.set({ "i", "s" }, "<C-j>", function()
+vim.keymap.set({ "i", "s" }, "<C-p>", function()
   if ls.jumpable(-1) then
     ls.jump(-1)
   end
