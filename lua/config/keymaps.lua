@@ -12,6 +12,31 @@
 --   x:     all visual modes
 
 -- ---------------------------------------------
+--  Code editing
+-- ---------------------------------------------
+-- Move selected lines in visual mode and reindent
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
+
+-- ---------------------------------------------
+--  Quality of life
+-- ---------------------------------------------
+-- Recenter after C-d or C-u
+vim.keymap.set("n", "<C-d>", "<C-d>zz")
+vim.keymap.set("n", "<C-u>", "<C-u>zz")
+
+-- Recenter after moving to next or previous search result
+vim.keymap.set("n", "n", "nzzzv")
+vim.keymap.set("n", "N", "Nzzzv")
+
+-- Paste without losing the paste buffer content
+vim.keymap.set("x", "<leader>p", [["_dP]])
+
+-- Reindent paragraph and then return to the same line we started in.
+-- Uses the mark 't'
+vim.keymap.set("n", "=ap", "mt=ap't")
+
+-- ---------------------------------------------
 --  Files
 -- ---------------------------------------------
 vim.keymap.set({ "n", "x" }, "<leader>fs", "<cmd>w<cr>", { desc = "Save file" })
