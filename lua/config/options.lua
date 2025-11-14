@@ -11,4 +11,7 @@ if vim.fn.has("win32") == 1 then
   vim.opt.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command"
   vim.opt.shellquote = ""
   vim.opt.shellxquote = ""
+  -- Neovide scaling
+  vim.g.neovide_scale_factor = 1.0
+  vim.o.guifont = "JetBrainsMono Nerd Font:h12"
 end
