@@ -11,6 +11,8 @@
 --   <C-v>: visual block mode
 --   x:     all visual modes
 
+local cpp_switch = require("utils.cpp_switch")
+
 -- ---------------------------------------------
 --  Code editing
 -- ---------------------------------------------
@@ -95,3 +97,15 @@ vim.keymap.set({ "i", "s" }, "<C-p>", function()
     ls.jump(-1)
   end
 end, { silent = true })
+
+-- ---------------------------------------------------------------------------
+--  C++: Switch between header and implementation
+-- ---------------------------------------------------------------------------
+
+vim.keymap.set("n", "<leader>oh", cpp_switch.switch_source_header_smart, { desc = "Switch between header/source" })
+vim.keymap.set(
+  "n",
+  "<leader>oH",
+  cpp_switch.switch_source_header_vsplit,
+  { desc = "Switch header/source in vertical split" }
+)
