@@ -3,7 +3,7 @@
 return {
   {
     "folke/snacks.nvim",
-    -- disable the default mapping first, then add yours
+    -- Disable the default mapping first, then add yours
     keys = {
       -- Disable original keybinding. Important: same mode as upstream (normal)
       { "<leader><leader>", false },
@@ -14,6 +14,18 @@ return {
           require("snacks").picker.buffers()
         end,
         desc = "Buffers",
+      },
+
+      -- Always show and hide the same terminal instance
+      {
+        "<leader>tt",
+        function()
+          local Snacks = require("snacks")
+          -- 'main' is an arbitrary id; pick any string/number you like
+          Snacks.terminal.toggle(nil, { id = "main" })
+        end,
+        mode = "n",
+        desc = "Terminal: toggle main",
       },
     },
   },
