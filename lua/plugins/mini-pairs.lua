@@ -1,5 +1,5 @@
 return {
-  "nvim.mini/mini.pairs",
+  "nvim-mini/mini.pairs",
   event = "VeryLazy",
   opts = function(_, opts)
     -- keep existing opts if any and extend
