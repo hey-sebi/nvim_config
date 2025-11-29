@@ -10,7 +10,34 @@
 --
 --
 
+-- -----------------------------------------------------------------
+--  Adjust formatoptions for all buffers
+-- -----------------------------------------------------------------
+local group = vim.api.nvim_create_augroup("my_formatoptions", { clear = true })
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = group,
+  pattern = "*",
+  callback = function()
+    -- note: this is buffer-local, therefore this must be done this way
+    vim.opt_local.formatoptions:remove({ "o" })
+    -- formatoptions:
+    -- l — long lines not automatically broken in non-comments
+    -- n — recognize numbered lists (1., -, etc.)
+    -- t — auto-wrap text using textwidth
+    -- o — add comment leader on o/O
+    -- r — continue comments on <Enter>
+    -- c — auto-wrap comments
+    -- q — allow gq formatting
+    -- j — remove comment leader when joining lines
+    -- Example for disabling multiple settings:
+    -- vim.opt_local.formatoptions:remove({ "o", "r" })
+  end,
+})
+
+-- -----------------------------------------------------------------
 -- Jump to file locations shown in terminal output under cursor
+-- -----------------------------------------------------------------
 vim.api.nvim_create_autocmd("TermOpen", {
   callback = function(args)
     local buf = args.buf
