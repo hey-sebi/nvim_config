@@ -11,8 +11,6 @@
 --   <C-v>: visual block mode
 --   x:     all visual modes
 
-local cpp_switch = require("utils.cpp_switch")
-
 -- ---------------------------------------------
 --  Code editing
 -- ---------------------------------------------
@@ -64,48 +62,33 @@ vim.keymap.set("n", "<leader>lc", "<cmd>lclose<CR>", { desc = "Loclist Close" })
 -- ---------------------------------------------
 --  LuaSnip jumps
 -- ---------------------------------------------
-local ls = require("luasnip")
+local lsc = require("utils.luasnip_customization")
 
 -- Forward: expand current snippet or jump to next placeholder
-vim.keymap.set({ "i", "s" }, "<Tab>", function()
-  if ls.expand_or_locally_jumpable() then
-    ls.expand_or_jump()
-  else
-    -- fall back to a real <Tab> if not in a snippet
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "n", false)
-  end
-end, { silent = true })
-
+vim.keymap.set({ "i", "s" }, "<Tab>", lsc.tab_replace, { silent = true })
 -- Backward: jump to previous placeholder
-vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
-  if ls.jumpable(-1) then
-    ls.jump(-1)
-  else
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<S-Tab>", true, true, true), "n", false)
-  end
-end, { silent = true })
+vim.keymap.set({ "i", "s" }, "<S-Tab>", lsc.shift_tab_replace, { silent = true })
 
 -- Optional alternative keys
-vim.keymap.set({ "i", "s" }, "<C-n>", function()
-  if ls.expand_or_locally_jumpable() then
-    ls.expand_or_jump()
-  end
-end, { silent = true })
-
-vim.keymap.set({ "i", "s" }, "<C-p>", function()
-  if ls.jumpable(-1) then
-    ls.jump(-1)
-  end
-end, { silent = true })
+vim.keymap.set({ "i", "s" }, "<C-n>", lsc.expand_or_jump, { silent = true })
+vim.keymap.set({ "i", "s" }, "<C-p>", lsc.jump_if_jumpable, { silent = true })
 
 -- ---------------------------------------------------------------------------
 --  C++: Switch between header and implementation
 -- ---------------------------------------------------------------------------
 
-vim.keymap.set("n", "<leader>oh", cpp_switch.switch_source_header_smart, { desc = "Switch between header/source" })
+local cpp_switch = require("utils.cpp_switch")
+vim.keymap.set("n", "<leader>fa", cpp_switch.switch_source_header_smart, { desc = "Switch between header/source" })
 vim.keymap.set(
   "n",
-  "<leader>oH",
+  "<leader>fA",
   cpp_switch.switch_source_header_vsplit,
   { desc = "Switch header/source in vertical split" }
 )
+
+-- ---------------------------------------------------------------------------
+--  Yanky customization
+-- ---------------------------------------------------------------------------
+
+vim.keymap.set("n", "<c-p>", "<Plug>(YankyPreviousEntry)")
+vim.keymap.set("n", "<c-n>", "<Plug>(YankyNextEntry)")
