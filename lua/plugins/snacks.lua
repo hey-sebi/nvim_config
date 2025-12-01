@@ -1,5 +1,4 @@
 -- Contains customizations and overrides for snacks
-
 return {
   {
     "folke/snacks.nvim",
