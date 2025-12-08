@@ -12,6 +12,14 @@
 --   x:     all visual modes
 
 -- ---------------------------------------------
+--  Unset predefined keybindings that I don't
+--  use or want to use for other purposes
+-- ---------------------------------------------
+
+-- defaults to "save buffer"
+vim.keymap.set({ "n", "i", "v" }, "<C-s>", "<Nop>")
+
+-- ---------------------------------------------
 --  Code editing
 -- ---------------------------------------------
 -- Move selected lines in visual mode and reindent
