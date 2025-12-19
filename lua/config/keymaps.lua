@@ -100,3 +100,12 @@ vim.keymap.set(
 
 vim.keymap.set("n", "<c-p>", "<Plug>(YankyPreviousEntry)")
 vim.keymap.set("n", "<c-n>", "<Plug>(YankyNextEntry)")
+
+-- ---------------------------------------------------------------------------
+--  Copy buffer paths
+-- ---------------------------------------------------------------------------
+local pathclip = require("utils.copy_buffer_path")
+
+-- <leader>fp is already used by LazyVim ("Projects") :contentReference[oaicite:2]{index=2}
+vim.keymap.set("n", "<leader>fpa", pathclip.copy_buffer_abs, { desc = "Copy Absolute Path (Buffer)" })
+vim.keymap.set("n", "<leader>fpr", pathclip.copy_buffer_rel, { desc = "Copy Relative Path (Buffer)" })
