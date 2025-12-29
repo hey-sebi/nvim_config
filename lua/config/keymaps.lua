@@ -118,3 +118,11 @@ vim.keymap.set("n", "<leader>ct", function()
   text.trim_trailing_whitespace()
 end, { desc = "Trim trailing whitespace" })
 
+-- ---------------------------------------------------------------------------
+--  File follow mode
+-- ---------------------------------------------------------------------------
+local follow_mode = require("utils.follow_mode")
+
+vim.keymap.set("n", "<leader>bf", function()
+  follow_mode.toggle(0)
+end, { desc = "Toggle Follow Mode (buffer)" })
