@@ -65,12 +65,71 @@ map("n", "<leader>fa", act("C_Cpp.SwitchHeaderSource"), { desc = "Other file (he
 -- -----------------------------------------------------------------------------
 -- Explorer / Git / UI panels
 -- -----------------------------------------------------------------------------
--- Simple, robust version of your toggle logic:
+
 -- <leader>e focuses Explorer; <leader>E toggles sidebar visibility.
 map("n", "<leader>e", act("workbench.view.explorer"), { desc = "Explorer" })
 map("n", "<leader>E", act("workbench.action.toggleSidebarVisibility"), { desc = "Toggle sidebar" })
 
+-- ---------------------------------------------------------------------------
+-- Git (LazyVim / gitsigns-like)
+-- ---------------------------------------------------------------------------
+
+-- <leader>gg focuses SVM view
 map("n", "<leader>gg", act_many({ "workbench.view.scm", "workbench.scm.focus" }), { desc = "Git / SCM" })
+
+-- Hunk / chunk (selection-based)
+map("v", "<leader>gs", act("git.stageSelectedRanges"), {
+  desc = "Git: Stage selection / hunk",
+})
+
+map("v", "<leader>gu", act("git.unstageSelectedRanges"), {
+  desc = "Git: Unstage selection / hunk",
+})
+
+-- File-level (active editor)
+map("n", "<leader>gS", act("git.stage"), {
+  desc = "Git: Stage file",
+})
+
+map("n", "<leader>gU", act("git.unstage"), {
+  desc = "Git: Unstage file",
+})
+
+-- Set active repo (if there are submodules)
+map(
+  "n",
+  "<leader>gR",
+  act_many({
+    "workbench.view.scm",
+    "workbench.scm.repositories.focus",
+  }),
+  { desc = "Git: Focus repository picker" }
+)
+
+-- Committing
+map(
+  "n",
+  "<leader>gc",
+  act_many({
+    "workbench.view.scm",
+    -- note: this is necessary for multi repo / submodule workspaces
+    "workbench.scm.action.focusNextInput",
+  }),
+  { desc = "Git: Focus commit message" }
+)
+
+-- Actually commit. Will prompt the COMMIT_EDITMSG.
+-- Does not work from within the input field.
+-- Requires an active repo to be set.
+map(
+  "n",
+  "<leader>gC",
+  act_many({
+    "workbench.view.scm",
+    "git.commit",
+  }),
+  { desc = "Git: Commit" }
+)
 
 -- -----------------------------------------------------------------------------
 -- Files
@@ -175,3 +234,56 @@ map("n", "<leader>jc", act("workbench.action.closePanel"), { desc = "Close panel
 map("n", "<leader>tt", act("workbench.action.terminal.toggleTerminal"), { desc = "Toggle terminal" })
 map("n", "<leader>te", act("workbench.action.focusActiveEditorGroup"), { desc = "Focus editor" })
 map("n", "<C-\\>", act("workbench.action.terminal.toggleTerminal"), { desc = "Toggle terminal" })
+map("n", "<leader>tj", act("workbench.action.togglePanel"), { desc = "Toggle panel visibility" })
+
+-- ---------------------------------------------------------------------------
+-- Tasks (Overseer-like)
+-- ---------------------------------------------------------------------------
+
+map("n", "<leader>or", act("workbench.action.tasks.runTask"), {
+  desc = "Run task",
+})
+
+map("n", "<leader>oo", act("workbench.action.tasks.reRunTask"), {
+  desc = "Rerun last task",
+})
+
+map("n", "<leader>ot", act("workbench.action.tasks.showTasks"), {
+  desc = "Show running tasks",
+})
+
+-- ---------------------------------------------------------------------------
+-- Debugger (LazyVim-style <leader>d...)
+-- ---------------------------------------------------------------------------
+
+map("n", "<leader>dc", act("workbench.action.debug.start"), {
+  desc = "Debug: Start / Continue",
+})
+
+map("n", "<leader>db", act("editor.debug.action.toggleBreakpoint"), {
+  desc = "Debug: Toggle breakpoint",
+})
+
+map("n", "<leader>di", act("workbench.action.debug.stepInto"), {
+  desc = "Debug: Step into",
+})
+
+map("n", "<leader>do", act("workbench.action.debug.stepOver"), {
+  desc = "Debug: Step over",
+})
+
+map("n", "<leader>dO", act("workbench.action.debug.stepOut"), {
+  desc = "Debug: Step out",
+})
+
+map("n", "<leader>dr", act("workbench.action.debug.restart"), {
+  desc = "Debug: Restart",
+})
+
+map("n", "<leader>dt", act("workbench.action.debug.stop"), {
+  desc = "Debug: Stop",
+})
+
+map("n", "<leader>du", act("workbench.view.debug"), {
+  desc = "Debug: UI",
+})
