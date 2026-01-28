@@ -70,30 +70,31 @@ vim.keymap.set("n", "<leader>lc", "<cmd>lclose<CR>", { desc = "Loclist Close" })
 -- ---------------------------------------------
 --  LuaSnip jumps
 -- ---------------------------------------------
-local lsc = require("utils.luasnip_customization")
+if not vim.g.vscode then
+  local lsc = require("utils.luasnip_customization")
 
--- Forward: expand current snippet or jump to next placeholder
-vim.keymap.set({ "i", "s" }, "<Tab>", lsc.tab_replace, { silent = true })
--- Backward: jump to previous placeholder
-vim.keymap.set({ "i", "s" }, "<S-Tab>", lsc.shift_tab_replace, { silent = true })
+  -- Forward: expand current snippet or jump to next placeholder
+  vim.keymap.set({ "i", "s" }, "<Tab>", lsc.tab_replace, { silent = true })
+  -- Backward: jump to previous placeholder
+  vim.keymap.set({ "i", "s" }, "<S-Tab>", lsc.shift_tab_replace, { silent = true })
 
--- Optional alternative keys
-vim.keymap.set({ "i", "s" }, "<C-n>", lsc.expand_or_jump, { silent = true })
-vim.keymap.set({ "i", "s" }, "<C-p>", lsc.jump_if_jumpable, { silent = true })
-
+  -- Optional alternative keys
+  vim.keymap.set({ "i", "s" }, "<C-n>", lsc.expand_or_jump, { silent = true })
+  vim.keymap.set({ "i", "s" }, "<C-p>", lsc.jump_if_jumpable, { silent = true })
+end
 -- ---------------------------------------------------------------------------
 --  C++: Switch between header and implementation
 -- ---------------------------------------------------------------------------
-
-local cpp_switch = require("utils.cpp_switch")
-vim.keymap.set("n", "<leader>fa", cpp_switch.switch_source_header_smart, { desc = "Switch between header/source" })
-vim.keymap.set(
-  "n",
-  "<leader>fA",
-  cpp_switch.switch_source_header_vsplit,
-  { desc = "Switch header/source in vertical split" }
-)
-
+if not vim.g.vscode then
+  local cpp_switch = require("utils.cpp_switch")
+  vim.keymap.set("n", "<leader>fa", cpp_switch.switch_source_header_smart, { desc = "Switch between header/source" })
+  vim.keymap.set(
+    "n",
+    "<leader>fA",
+    cpp_switch.switch_source_header_vsplit,
+    { desc = "Switch header/source in vertical split" }
+  )
+end
 -- ---------------------------------------------------------------------------
 --  Yanky customization
 -- ---------------------------------------------------------------------------
@@ -111,10 +112,12 @@ vim.keymap.set("n", "<leader>fpa", pathclip.copy_buffer_abs, { desc = "Copy Abso
 vim.keymap.set("n", "<leader>fpr", pathclip.copy_buffer_rel, { desc = "Copy Relative Path (Buffer)" })
 
 -- ---------------------------------------------------------------------------
---  Custom text manipulation
+--  Text manipulation
 -- ---------------------------------------------------------------------------
+
+-- whitespaces
 local text = require("utils.text")
-vim.keymap.set("n", "<leader>ct", function()
+vim.keymap.set("n", "<leader>ctw", function()
   text.trim_trailing_whitespace()
 end, { desc = "Trim trailing whitespace" })
 
@@ -126,3 +129,10 @@ local follow_mode = require("utils.follow_mode")
 vim.keymap.set("n", "<leader>bf", function()
   follow_mode.toggle(0)
 end, { desc = "Toggle Follow Mode (buffer)" })
+
+-- ---------------------------------------------------------------------------
+--  Load VSCode keymaps if relevant
+-- ---------------------------------------------------------------------------
+if vim.g.vscode then
+  require("config.vscode-keymaps")
+end

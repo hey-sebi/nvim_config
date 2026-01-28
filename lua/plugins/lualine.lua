@@ -1,6 +1,7 @@
 return {
   {
     "nvim-lualine/lualine.nvim",
+    cond = not vim.g.vscode,
     opts = function(_, opts)
       -- Ensure tables exist
       opts.sections = opts.sections or {}

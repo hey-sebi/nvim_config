@@ -1,6 +1,7 @@
 return {
   {
     "folke/tokyonight.nvim",
+    cond = not vim.g.vscode,
     opts = {
       style = "storm",
       styles = {

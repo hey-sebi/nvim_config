@@ -4,6 +4,7 @@ return {
   -- 1) Mason: make sure Python tools get installed
   {
     "mason-org/mason.nvim",
+    cond = not vim.g.vscode,
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, {
@@ -24,6 +25,7 @@ return {
   -- 2) LSP: configure the server
   {
     "neovim/nvim-lspconfig",
+    cond = not vim.g.vscode,
     opts = {
       servers = {
         -- Choose one of these two; basedpyright shown by default:

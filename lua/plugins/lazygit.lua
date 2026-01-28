@@ -1,5 +1,6 @@
 return {
   "kdheepak/lazygit.nvim",
+  cond = not vim.g.vscode,
   lazy = true,
   cmd = {
     "LazyGit",

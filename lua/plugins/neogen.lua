@@ -2,6 +2,7 @@
 return {
   {
     "danymat/neogen",
+    cond = not vim.g.vscode,
     version = "*", -- track latest stable
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     cmd = "Neogen",

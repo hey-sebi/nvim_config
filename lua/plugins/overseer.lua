@@ -1,5 +1,6 @@
 return {
   "stevearc/overseer.nvim",
+  cond = not vim.g.vscode,
 
   -- ----------------------------------------------------------------
   -- Behavior customization
