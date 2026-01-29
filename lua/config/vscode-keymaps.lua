@@ -171,10 +171,8 @@ map({ "n", "v" }, "<leader>sL", act("editor.action.startFindReplaceAction"), { d
 map("n", "<leader>ss", act("workbench.action.gotoSymbol"), { desc = "Document symbols" })
 map("n", "<leader>sS", act("workbench.action.showAllSymbols"), { desc = "Workspace symbols" })
 
--- Multi-cursor (optional). This can be spicy if you rely on <C-n> in other contexts.
--- Safer alternative is <A-d> like you already used.
+-- Multi-cursor
 map({ "n", "v" }, "<A-d>", act("editor.action.addSelectionToNextFindMatch"), { desc = "Add selection to next match" })
--- map({ "n", "v" }, "<C-n>", act("editor.action.addSelectionToNextFindMatch"), { desc = "Add selection to next match" })
 
 -- Search: <leader>sw = workspace search for word under cursor / visual selection
 local function visual_selection_text()
@@ -284,6 +282,25 @@ map("n", "<leader>dt", act("workbench.action.debug.stop"), {
   desc = "Debug: Stop",
 })
 
-map("n", "<leader>du", act("workbench.view.debug"), {
-  desc = "Debug: UI",
-})
+map("n", "<leader>du", act("workbench.view.debug"), { desc = "Debug: UI" })
+
+-- ---------------------------------------------------------------------------
+-- Harpoon. Note: we don't use the lazyvim harpoon here, but vscode plugin
+--  instead, as then UI elements are also supported.
+-- ---------------------------------------------------------------------------
+
+map("n", "<leader>ha", act("vscode-harpoon.addEditor"), { desc = "Harpoon add buffer" })
+
+map("n", "<leader>he", act("vscode-harpoon.editEditors"), { desc = "Harpoon edit registered" })
+
+map("n", "<leader>hf", act("vscode-harpoon.editorQuickPick"), { desc = "Harpoon find" })
+
+map("n", "<leader>hp", act("vscode-harpoon.gotoPreviousHarpoonEditor"), { desc = "Harpoon previous buffer" })
+
+map("n", "<leader>1", act("vscode-harpoon.gotoEditor1"), { desc = "Harpoon goto buffer 1" })
+
+map("n", "<leader>2", act("vscode-harpoon.gotoEditor2"), { desc = "Harpoon gogo buffer 2" })
+
+map("n", "<leader>3", act("vscode-harpoon.gotoEditor3"), { desc = "Harpoon goto buffer 3" })
+
+map("n", "<leader>4", act("vscode-harpoon.gotoEditor4"), { desc = "Harpoon goto buffer 4" })
