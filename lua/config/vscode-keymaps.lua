@@ -25,6 +25,12 @@ local function act_many(cmds)
   end
 end
 
+-- ---------------------------------------------------------------------------
+-- Completion keys: let VS Code own <Tab> / <S-Tab> in insert/snippet mode
+-- ---------------------------------------------------------------------------
+pcall(vim.keymap.del, { "i", "s" }, "<Tab>")
+pcall(vim.keymap.del, { "i", "s" }, "<S-Tab>")
+
 -- -----------------------------------------------------------------------------
 -- Windows / splits (VSCode editor groups)
 -- -----------------------------------------------------------------------------
@@ -61,6 +67,19 @@ map("n", "<leader>b<CR>", act("workbench.action.keepEditor"), { desc = "Keep edi
 
 -- Header/source toggle (C/C++)
 map("n", "<leader>fa", act("C_Cpp.SwitchHeaderSource"), { desc = "Other file (header/source)" })
+
+local file_picker = require("utils.file_pickers")
+local ctx = file_picker.ctx_vscode_quickopen()
+
+vim.keymap.set("n", "<leader>fm", function()
+  -- mnemonic: file matches
+  file_picker.open_basename(ctx, { add_dot = false })
+end, { desc = "Quick Open: basename" })
+
+vim.keymap.set("n", "<leader>fM", function()
+  -- No real cwd scoping in VSCode Quick Open; we approximate by prefixing dir/...
+  file_picker.open_dir_scoped(ctx, { add_dot = false, force_cwd = false })
+end, { desc = "Quick Open: dir/basename" })
 
 -- -----------------------------------------------------------------------------
 -- Explorer / Git / UI panels
@@ -238,16 +257,20 @@ map("n", "<leader>tj", act("workbench.action.togglePanel"), { desc = "Toggle pan
 -- Tasks (Overseer-like)
 -- ---------------------------------------------------------------------------
 
-map("n", "<leader>or", act("workbench.action.tasks.runTask"), {
+map("n", "<leader>oo", act("workbench.action.tasks.runTask"), {
   desc = "Run task",
 })
 
-map("n", "<leader>oo", act("workbench.action.tasks.reRunTask"), {
+map("n", "<leader>or", act("workbench.action.tasks.reRunTask"), {
   desc = "Rerun last task",
 })
 
 map("n", "<leader>ot", act("workbench.action.tasks.showTasks"), {
   desc = "Show running tasks",
+})
+
+map("n", "<leader>ox", act("workbench.action.tasks.terminate"), {
+  desc = "Terminate tasks",
 })
 
 -- ---------------------------------------------------------------------------

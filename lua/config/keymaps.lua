@@ -51,6 +51,20 @@ vim.keymap.set({ "n", "x" }, "<leader>fs", "<cmd>w<cr>", { desc = "Save file" })
 vim.keymap.set("n", "<leader>fo", ":e ", { desc = "Open file (Root Dir)", silent = false })
 vim.keymap.set("n", "<leader>fO", ":e %:h/", { desc = "Open file (cwd)", silent = false })
 
+local file_pick = require("utils.file_pickers")
+local ctx = file_pick.ctx_lazyvim_snacks()
+-- prefills the picker with a filename without file ending
+vim.keymap.set("n", "<leader>fm", function()
+  -- mnemonic: file matches
+  file_pick.open_basename(ctx, { add_dot = false })
+end, { desc = "Find files: basename" })
+
+-- prefills the picker with a filename without file ending, current working dir
+vim.keymap.set("n", "<leader>fM", function()
+  -- true directory scoping via Snacks `cwd`
+  file_pick.open_dir_scoped(ctx, { add_dot = false, force_cwd = true })
+end, { desc = "Find files: basename (cwd=dir)" })
+
 -- ---------------------------------------------
 --  List navigation
 -- ---------------------------------------------
@@ -98,9 +112,8 @@ end
 -- ---------------------------------------------------------------------------
 --  Yanky customization
 -- ---------------------------------------------------------------------------
-
-vim.keymap.set("n", "<c-p>", "<Plug>(YankyPreviousEntry)")
-vim.keymap.set("n", "<c-n>", "<Plug>(YankyNextEntry)")
+vim.keymap.set("n", "<C-n>", "]y", { desc = "Yank ring next" })
+vim.keymap.set("n", "<C-p>", "[y", { desc = "Yank ring previous" })
 
 -- ---------------------------------------------------------------------------
 --  Copy buffer paths
@@ -120,6 +133,15 @@ local text = require("utils.text")
 vim.keymap.set("n", "<leader>ctw", function()
   text.trim_trailing_whitespace()
 end, { desc = "Trim trailing whitespace" })
+
+-- Doxygen: toggle block <-> /// comments
+vim.keymap.set("n", "<leader>ctd", function()
+  require("utils.doxygen_toggle").toggle()
+end, { desc = "Toggle Doxygen comment style" })
+
+vim.keymap.set("x", "<leader>ctd", function()
+  require("utils.doxygen_toggle").toggle()
+end, { desc = "Toggle Doxygen comment style (selection)" })
 
 -- ---------------------------------------------------------------------------
 --  File follow mode
