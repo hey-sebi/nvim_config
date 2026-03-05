@@ -93,12 +93,12 @@ map("n", "<leader>E", act("workbench.action.toggleSidebarVisibility"), { desc = 
 -- Git (LazyVim / gitsigns-like)
 -- ---------------------------------------------------------------------------
 
--- <leader>gg focuses SVM view
+-- <leader>gg focuses SCM view
 map("n", "<leader>gg", act_many({ "workbench.view.scm", "workbench.scm.focus" }), { desc = "Git / SCM" })
 
 -- Hunk / chunk (selection-based)
-map("v", "<leader>gs", act("git.stageSelectedRanges"), {
-  desc = "Git: Stage selection / hunk",
+map("v", "<leader>ga", act("git.stageSelectedRanges"), {
+  desc = "Git: Stage (add) selection / hunk",
 })
 
 map("v", "<leader>gu", act("git.unstageSelectedRanges"), {
@@ -106,8 +106,8 @@ map("v", "<leader>gu", act("git.unstageSelectedRanges"), {
 })
 
 -- File-level (active editor)
-map("n", "<leader>gS", act("git.stage"), {
-  desc = "Git: Stage file",
+map("n", "<leader>gA", act("git.stage"), {
+  desc = "Git: Stage (add) file",
 })
 
 map("n", "<leader>gU", act("git.unstage"), {
