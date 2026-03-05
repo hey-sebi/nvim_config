@@ -112,8 +112,8 @@ end
 -- ---------------------------------------------------------------------------
 --  Yanky customization
 -- ---------------------------------------------------------------------------
-vim.keymap.set("n", "<C-n>", "]y", { desc = "Yank ring next" })
-vim.keymap.set("n", "<C-p>", "[y", { desc = "Yank ring previous" })
+vim.keymap.set("n", "<leader>yn", "]y", { desc = "Yank ring next" })
+vim.keymap.set("n", "<leader>np", "[y", { desc = "Yank ring previous" })
 
 -- ---------------------------------------------------------------------------
 --  Copy buffer paths
