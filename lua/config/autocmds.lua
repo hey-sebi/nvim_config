@@ -78,3 +78,15 @@ vim.api.nvim_create_autocmd("TermOpen", {
     end, { buffer = buf, desc = "Open file:line(:col) under cursor" })
   end,
 })
+
+-- Create an autocommand group for VS Code specific tweaks
+local vscode_group = vim.api.nvim_create_augroup("VSCodeTweak", { clear = true })
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = vscode_group,
+  -- List of file types where we don't want spell checking:
+  pattern = { "log", "proto", "text", "cpp", "cdl", "groovy" },
+  callback = function()
+    vim.opt_local.spell = false
+  end,
+})
