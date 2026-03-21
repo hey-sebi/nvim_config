@@ -3,38 +3,59 @@ return {
     "nvim-lualine/lualine.nvim",
     cond = not vim.g.vscode,
     opts = function(_, opts)
-      -- Ensure tables exist
       opts.sections = opts.sections or {}
       opts.sections.lualine_x = opts.sections.lualine_x or {}
 
-      -- Buffer-local follow mode indicator
+      --- @return string
       local function follow_indicator()
-        -- This is set by utils/follow_mode.lua (vim.b.follow_mode_enabled)
-        if vim.b.follow_mode_enabled then
-          return "FOLLOW"
-        end
-        return ""
+        return vim.b.follow_mode_enabled and "FOLLOW" or ""
       end
 
-      table.insert(opts.sections.lualine_x, 1, {
-        follow_indicator,
-        -- color = { fg = "#..." }, -- optional for explicit styling
-      })
+      --- Adds an "alternate file exists" indicator (currently only for C++)
+      --- @return string
+      local function alt_indicator()
+        -- Robust loading of our utility
+        local ok, cpp_switch = pcall(require, "utils.cpp_switch")
+        if not ok then
+          return ""
+        end
 
-      -- Add encoding and filetype (and optionally fileformat) on the right side
-      -- Common components:
-      --   "encoding"   -> file encoding (utf-8, latin1, ...)
-      --   "fileformat" -> line endings (unix, dos, mac)
-      --   "filetype"   -> ft (cpp, python, ...)
-      table.insert(opts.sections.lualine_x, 1, "encoding")
-      table.insert(opts.sections.lualine_x, 2, "fileformat")
-      -- table.insert(opts.sections.lualine_x, 3, {
-      --   "filetype",
-      --   icon = true,
-      --   -- Set to true: only show the icon
-      --   -- set to false: show "cpp", "python", etc.
-      --   icon_only = false,
-      -- })
+        if vim.bo.buftype ~= "" then
+          return ""
+        end
+        local bufname = vim.api.nvim_buf_get_name(0)
+        if bufname == "" then
+          return ""
+        end
+
+        -- Manual check (must be fast for statusline)
+        local alternates = cpp_switch.find_all_alternates(bufname)
+        return #alternates > 0 and "󰈔 Alt" or ""
+      end
+
+      -- Prepend custom items. Note: Lualine renders them in the order inserted.
+      local custom_components = {
+        { "encoding" },
+        { "fileformat" },
+        {
+          follow_indicator,
+          color = { fg = "#7aa2f7" },
+        },
+        {
+          alt_indicator,
+          color = { fg = "#ff9e64", gui = "bold" },
+          on_click = function()
+            local ok, cpp_switch = pcall(require, "utils.cpp_switch")
+            if ok then
+              cpp_switch.switch_smart()
+            end
+          end,
+        },
+      }
+
+      for i, comp in ipairs(custom_components) do
+        table.insert(opts.sections.lualine_x, i, comp)
+      end
     end,
   },
 }
