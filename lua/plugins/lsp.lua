@@ -8,7 +8,9 @@ return {
       library = {
         -- Load the neovim type definitions
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+        -- Load LazyVim type definitions
         { path = "lazy.nvim", words = { "LazyVim" } },
+        { path = "snacks.nvim", words = { "Snacks" } },
       },
     },
   },
