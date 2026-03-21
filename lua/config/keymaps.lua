@@ -101,13 +101,8 @@ end
 -- ---------------------------------------------------------------------------
 if not vim.g.vscode then
   local cpp_switch = require("utils.cpp_switch")
-  vim.keymap.set("n", "<leader>fa", cpp_switch.switch_source_header_smart, { desc = "Switch between header/source" })
-  vim.keymap.set(
-    "n",
-    "<leader>fA",
-    cpp_switch.switch_source_header_vsplit,
-    { desc = "Switch header/source in vertical split" }
-  )
+  vim.keymap.set("n", "<leader>fa", cpp_switch.switch_smart, { desc = "Switch between header/source" })
+  vim.keymap.set("n", "<leader>fA", cpp_switch.switch_smart_vsplit, { desc = "Switch header/source in vertical split" })
 end
 -- ---------------------------------------------------------------------------
 --  Yanky customization
