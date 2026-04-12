@@ -92,12 +92,7 @@ end
 if not vim.g.vscode then
   local lsc = require("utils.luasnip_customization")
 
-  -- Forward: expand current snippet or jump to next placeholder
-  vim.keymap.set({ "i", "s" }, "<Tab>", lsc.tab_replace, { silent = true })
-  -- Backward: jump to previous placeholder
-  vim.keymap.set({ "i", "s" }, "<S-Tab>", lsc.shift_tab_replace, { silent = true })
-
-  -- Optional alternative keys
+  -- Optional alternative keys (Tab/S-Tab handled by blink)
   vim.keymap.set({ "i", "s" }, "<C-n>", lsc.expand_or_jump, { silent = true })
   vim.keymap.set({ "i", "s" }, "<C-p>", lsc.jump_if_jumpable, { silent = true })
 end
