@@ -49,7 +49,10 @@ vim.keymap.set("n", "=ap", "mt=ap't")
 -- ---------------------------------------------
 vim.keymap.set({ "n", "x" }, "<leader>fs", "<cmd>w<cr>", { desc = "Save file" })
 vim.keymap.set("n", "<leader>fo", ":e ", { desc = "Open file (Root Dir)", silent = false })
-vim.keymap.set("n", "<leader>fO", ":e %:h/", { desc = "Open file (cwd)", silent = false })
+
+if not vim.g.vscode then
+  vim.keymap.set("n", "<leader>fO", ":e %:h/", { desc = "Open file (cwd)", silent = false })
+end
 
 local file_pick = require("utils.file_pickers")
 local ctx = file_pick.ctx_lazyvim_snacks()
@@ -76,10 +79,12 @@ vim.keymap.set("n", "<leader>jo", "<cmd>copen<CR>", { desc = "Quickfix Open" })
 vim.keymap.set("n", "<leader>jc", "<cmd>cclose<CR>", { desc = "Quickfix Close" })
 
 -- Navigate Location list
-vim.keymap.set("n", "<leader>ln", "<cmd>lnext<CR>", { desc = "Loclist Next" })
-vim.keymap.set("n", "<leader>lp", "<cmd>lprev<CR>", { desc = "Loclist Prev" })
-vim.keymap.set("n", "<leader>lo", "<cmd>lopen<CR>", { desc = "Loclist Open" })
-vim.keymap.set("n", "<leader>lc", "<cmd>lclose<CR>", { desc = "Loclist Close" })
+if not vim.g.vscode then
+  vim.keymap.set("n", "<leader>ln", "<cmd>lnext<CR>", { desc = "Loclist Next" })
+  vim.keymap.set("n", "<leader>lp", "<cmd>lprev<CR>", { desc = "Loclist Prev" })
+  vim.keymap.set("n", "<leader>lo", "<cmd>lopen<CR>", { desc = "Loclist Open" })
+  vim.keymap.set("n", "<leader>lc", "<cmd>lclose<CR>", { desc = "Loclist Close" })
+end
 
 -- ---------------------------------------------
 --  LuaSnip jumps
@@ -141,11 +146,13 @@ end, { desc = "Toggle Doxygen comment style (selection)" })
 -- ---------------------------------------------------------------------------
 --  File follow mode
 -- ---------------------------------------------------------------------------
-local follow_mode = require("utils.follow_mode")
+if not vim.g.vscode then
+  local follow_mode = require("utils.follow_mode")
 
-vim.keymap.set("n", "<leader>bf", function()
-  follow_mode.toggle(0)
-end, { desc = "Toggle Follow Mode (buffer)" })
+  vim.keymap.set("n", "<leader>bf", function()
+    follow_mode.toggle(0)
+  end, { desc = "Toggle Follow Mode (buffer)" })
+end
 
 -- ---------------------------------------------------------------------------
 --  Load VSCode keymaps if relevant
