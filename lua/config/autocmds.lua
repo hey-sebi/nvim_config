@@ -90,3 +90,12 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.spell = false
   end,
 })
+
+-- Enable text wrapping for Markdown files
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "markdown" },
+  callback = function()
+    vim.opt_local.textwidth = 100 -- standard column wrap
+    vim.opt_local.formatoptions:append("t") -- auto-wrap text using textwidth
+  end,
+})
