@@ -2,17 +2,17 @@ return {
   "nvim-neotest/neotest",
   keys = {
     -- unbind defaults: <leader>t conflicts with my terminal keybindings. Instead we use N for neotest (n is noice already).
-    { "<leader>N", false },
-    { "<leader>Na", false },
-    { "<leader>Nt", false },
-    { "<leader>NT", false },
-    { "<leader>Nr", false },
-    { "<leader>Nl", false },
-    { "<leader>Ns", false },
-    { "<leader>No", false },
-    { "<leader>NO", false },
-    { "<leader>NS", false },
-    { "<leader>Nw", false },
+    { "<leader>T", false },
+    { "<leader>Ta", false },
+    { "<leader>Tt", false },
+    { "<leader>TT", false },
+    { "<leader>Tr", false },
+    { "<leader>Tl", false },
+    { "<leader>Ts", false },
+    { "<leader>To", false },
+    { "<leader>TO", false },
+    { "<leader>TS", false },
+    { "<leader>Tw", false },
     -- set the new keybindings
     { "<leader>N", "", desc = "+test" },
     {
