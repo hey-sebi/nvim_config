@@ -6,13 +6,21 @@
 --
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
---
---
---
+
+-- -----------------------------------------------------------------
+--  Things to do when saving a buffer
+-- -----------------------------------------------------------------
+
+-- whitespace cleanup
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  command = [[%s/\s\+$//e]],
+})
 
 -- -----------------------------------------------------------------
 --  Adjust formatoptions for all buffers
 -- -----------------------------------------------------------------
+
 local group = vim.api.nvim_create_augroup("my_formatoptions", { clear = true })
 
 vim.api.nvim_create_autocmd("FileType", {
