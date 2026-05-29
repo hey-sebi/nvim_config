@@ -21,10 +21,11 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 --  Adjust formatoptions for all buffers
 -- -----------------------------------------------------------------
 
-local group = vim.api.nvim_create_augroup("my_formatoptions", { clear = true })
+local formatoptions_group = vim.api.nvim_create_augroup("my_formatoptions", { clear = true })
 
+-- General formatoptions behavior
 vim.api.nvim_create_autocmd("FileType", {
-  group = group,
+  group = formatoptions_group,
   pattern = "*",
   callback = function()
     -- note: this is buffer-local, therefore this must be done this way
