@@ -26,7 +26,7 @@ return {
         ["<C-n>"] = { "select_next", "fallback" },
         ["<C-p>"] = { "select_prev", "fallback" },
         ["<S-CR>"] = { "fallback" },
-        ["<CR>"] = { "select_and_accept", "fallback" },
+        ["<CR>"] = { "fallback" },
       },
       completion = {
         menu = { border = "rounded" },
