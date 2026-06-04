@@ -26,6 +26,20 @@ vim.keymap.set({ "n", "i", "v" }, "<C-s>", "<Nop>")
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
 
+-- Search/replace prefilled with word or selection
+vim.keymap.set("x", "<leader>rr", [["yy:%s/<C-r>y/]])
+
+-- Sets the search pattern to the current word and immediately triggers 'cgn'
+vim.keymap.set(
+  "n",
+  "<leader>rc",
+  [[:let @/ = '\<' . expand('<cword>') . '\>'<CR>:set hlsearch<CR>cgn]],
+  { silent = true }
+)
+
+-- Sets the search pattern to the currently selected text and triggers 'cgn' on that selection
+vim.keymap.set("x", "<leader>rc", [["yy:let @/ = '\V' . escape(@", '/\')<CR>:set hlsearch<CR>cgn]], { silent = true })
+
 -- ---------------------------------------------
 --  Quality of life
 -- ---------------------------------------------
