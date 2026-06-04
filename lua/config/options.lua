@@ -19,3 +19,6 @@ if vim.fn.has("win32") == 1 then
   vim.g.neovide_scale_factor = 1.0
   vim.o.guifont = "JetBrainsMono Nerd Font:h12"
 end
+
+-- Set LSP log level to warn to prevent huge log files
+vim.lsp.set_log_level("warn")
