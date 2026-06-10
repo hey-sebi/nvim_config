@@ -1,0 +1,6 @@
+{
+  "config": {
+    // Duplicate header text
+    "MD024": false,
+  },
+}
