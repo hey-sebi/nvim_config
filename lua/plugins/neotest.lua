@@ -1,85 +1,86 @@
 return {
   "nvim-neotest/neotest",
   keys = {
-    -- unbind defaults: <leader>t conflicts with my terminal keybindings. Instead we use N for neotest (n is noice already).
-    { "<leader>T", false },
-    { "<leader>Ta", false },
-    { "<leader>Tt", false },
-    { "<leader>TT", false },
-    { "<leader>Tr", false },
-    { "<leader>Tl", false },
-    { "<leader>Ts", false },
-    { "<leader>To", false },
-    { "<leader>TO", false },
-    { "<leader>TS", false },
-    { "<leader>Tw", false },
-    -- set the new keybindings
-    { "<leader>N", "", desc = "+test" },
+    -- unbind defaults: <leader>t conflicts with my terminal keybindings.
+    { "<leader>t", false },
+    { "<leader>ta", false },
+    { "<leader>tt", false },
+    { "<leader>tT", false },
+    { "<leader>tr", false },
+    { "<leader>tl", false },
+    { "<leader>ts", false },
+    { "<leader>to", false },
+    { "<leader>tO", false },
+    { "<leader>tS", false },
+    { "<leader>tw", false },
+    { "<leader>tg", false },
+    -- set the new keybindings using <leader>T (uppercase T)
+    { "<leader>T", "", desc = "+test" },
     {
-      "<leader>Na",
+      "<leader>Ta",
       function()
         require("neotest").run.attach()
       end,
       desc = "Attach to Test (Neotest)",
     },
     {
-      "<leader>Nt",
+      "<leader>Tt",
       function()
         require("neotest").run.run(vim.fn.expand("%"))
       end,
       desc = "Run File (Neotest)",
     },
     {
-      "<leader>NT",
+      "<leader>TT",
       function()
         require("neotest").run.run(vim.uv.cwd())
       end,
       desc = "Run All Test Files (Neotest)",
     },
     {
-      "<leader>Nr",
+      "<leader>Tr",
       function()
         require("neotest").run.run()
       end,
       desc = "Run Nearest (Neotest)",
     },
     {
-      "<leader>Nl",
+      "<leader>Tl",
       function()
         require("neotest").run.run_last()
       end,
       desc = "Run Last (Neotest)",
     },
     {
-      "<leader>Ns",
+      "<leader>Ts",
       function()
         require("neotest").summary.toggle()
       end,
       desc = "Toggle Summary (Neotest)",
     },
     {
-      "<leader>No",
+      "<leader>To",
       function()
         require("neotest").output.open({ enter = true, auto_close = true })
       end,
       desc = "Show Output (Neotest)",
     },
     {
-      "<leader>NO",
+      "<leader>TO",
       function()
         require("neotest").output_panel.toggle()
       end,
       desc = "Toggle Output Panel (Neotest)",
     },
     {
-      "<leader>NS",
+      "<leader>TS",
       function()
         require("neotest").run.stop()
       end,
       desc = "Stop (Neotest)",
     },
     {
-      "<leader>Nw",
+      "<leader>Tw",
       function()
         require("neotest").watch.toggle(vim.fn.expand("%"))
       end,

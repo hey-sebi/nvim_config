@@ -58,10 +58,27 @@ vim.keymap.set("x", "<leader>p", [["_dP]])
 -- Uses the mark 't'
 vim.keymap.set("n", "=ap", "mt=ap't")
 
+-- Search (grep) in the directory of the buffer that is currently open
+vim.keymap.set("n", "<leader>sf", function()
+  -- Get directory of the current active buffer
+  local current_dir = vim.fn.expand("%:p:h")
+
+  -- Fallback to project root if the buffer has no valid path
+  if current_dir == "" then
+    current_dir = vim.fn.getcwd()
+  end
+
+  require("snacks").picker.grep({
+    dirs = { current_dir },
+    title = "Grep in Buffer Dir: " .. vim.fn.fnamemodify(current_dir, ":t"),
+  })
+end, { desc = "Grep in Buffer Directory" })
+
 -- ---------------------------------------------
 --  Files
 -- ---------------------------------------------
 vim.keymap.set({ "n", "x" }, "<leader>fs", "<cmd>w<cr>", { desc = "Save file" })
+vim.keymap.set({ "n", "x" }, "<leader>fS", "<cmd>!silent wa<cr>", { desc = "Save all files" })
 vim.keymap.set("n", "<leader>fo", ":e ", { desc = "Open file (Root Dir)", silent = false })
 
 if not vim.g.vscode then
@@ -125,13 +142,13 @@ vim.keymap.set("n", "<leader>yn", "]y", { desc = "Yank ring next" })
 vim.keymap.set("n", "<leader>np", "[y", { desc = "Yank ring previous" })
 
 -- ---------------------------------------------------------------------------
---  Copy buffer paths
+--  Copy and display buffer paths
 -- ---------------------------------------------------------------------------
 local pathclip = require("utils.copy_buffer_path")
 
--- <leader>fp is already used by LazyVim ("Projects") :contentReference[oaicite:2]{index=2}
 vim.keymap.set("n", "<leader>fpa", pathclip.copy_buffer_abs, { desc = "Copy Absolute Path (Buffer)" })
 vim.keymap.set("n", "<leader>fpr", pathclip.copy_buffer_rel, { desc = "Copy Relative Path (Buffer)" })
+vim.keymap.set("n", "<leader>fps", pathclip.show_buffer_rel, { desc = "Show relative path (Buffer)" })
 
 -- ---------------------------------------------------------------------------
 --  Text manipulation
