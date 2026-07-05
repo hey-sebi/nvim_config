@@ -6,6 +6,13 @@
 --  General settings
 -- ---------------------------------------------
 
+-- Explicitly set the order of "workspace detection" mechanisms. We usually
+-- want this based on the working directory we start nvim in and not interfere
+-- with GIT workspace detection (as it might then use submodules) or similar.
+-- Alternative setting would be:
+-- vim.g.root_spec = { { ".git", "lua" }, "cwd", "lsp" }
+vim.g.root_spec = { "cwd" }
+
 -- ---------------------------------------------
 --  Windows specific settings
 -- ---------------------------------------------
