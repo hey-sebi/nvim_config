@@ -5,11 +5,10 @@ return {
     opts = {
       servers = {
         cmake = {
-          on_attach = function(client, _)
-            -- disable formatting for cmake-language-server
-            client.server_capabilities.documentFormattingProvider = false
-            client.server_capabilities.documentRangeFormattingProvider = false
-          end,
+          enabled = false,
+        },
+        neocmake = {
+          enabled = false,
         },
       },
     },
