@@ -7,6 +7,18 @@ return {
   -- ----------------------------------------------------------------
   opts = function(_, opts)
     opts = opts or {}
+    opts.disable_template_modules = {
+      "overseer.template.vscode",
+      "^.*vscode",
+    }
+    opts.templates = {
+      "builtin.cargo",
+      "builtin.make",
+      "builtin.just",
+      "builtin.npm",
+      "builtin.shell",
+      "user.msvc_build",
+    }
     opts.component_aliases = opts.component_aliases or {}
 
     -- Tasks coming from .vscode/tasks.json use the "default_vscode" alias
@@ -48,6 +60,11 @@ return {
     -- ----------------------------------------------------------------
     -- Additional keybindings
     -- ----------------------------------------------------------------
+    {
+      "<leader>oo",
+      "<cmd>OverseerRun<cr>",
+      desc = "Run task",
+    },
     {
       "<leader>or",
       function()
