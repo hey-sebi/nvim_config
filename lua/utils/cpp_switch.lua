@@ -7,8 +7,52 @@ local M = {}
 -- that fails, tries some manually defined patterns.
 -- ---------------------------------------------------------------------------
 
-local extensions = { "h", "hpp", "hh", "hxx", "c", "cpp", "cc", "cxx" }
+local header_exts = { "h", "hpp", "hh", "hxx" }
+local source_exts = { "cpp", "cc", "cxx", "c" }
 local suffixes = { "", "_impl", "-impl", "_p" }
+
+--- Determines if the extension indicates a header file.
+--- @param ext string
+--- @return boolean
+local function is_header_ext(ext)
+  local e = ext:lower()
+  for _, h_ext in ipairs(header_exts) do
+    if e == h_ext then
+      return true
+    end
+  end
+  return false
+end
+
+--- Get prioritized extensions list based on current file extension.
+--- @param ext string
+--- @return string[]
+local function get_prioritized_extensions(ext)
+  local prioritized = {}
+  local primary = header_exts
+  local secondary = source_exts
+
+  if is_header_ext(ext) then
+    primary = source_exts
+    secondary = header_exts
+  end
+
+  for _, e in ipairs(primary) do
+    table.insert(prioritized, e)
+  end
+  for _, e in ipairs(secondary) do
+    table.insert(prioritized, e)
+  end
+  return prioritized
+end
+
+--- Check if a path contains an 'include' component.
+--- @param path string
+--- @return boolean
+local function has_include_component(path)
+  local lp = path:lower()
+  return lp:match("[/\\]include[/\\]") or lp:match("[/\\]include$")
+end
 
 --- Normalize a path for Windows (slashes and casing) to use as a unique key.
 local function keypath(path)
@@ -26,6 +70,8 @@ function M.find_all_alternates(bufname)
   local full_path = vim.fs.normalize(bufname)
   local dir = vim.fn.fnamemodify(full_path, ":h")
   local fname = vim.fn.fnamemodify(full_path, ":t")
+  local ext = fname:match("%.([^%.]+)$") or ""
+  local search_extensions = get_prioritized_extensions(ext)
 
   -- 1. Extract the base name (domain_impl.cpp -> domain) using defined suffixes
   local stem = fname:match("^(.-)%.[^%.]+$") or fname
@@ -57,11 +103,6 @@ function M.find_all_alternates(bufname)
     end
   end
 
-  local function has_include_component(p)
-    local lp = p:lower()
-    return lp:match("[/\\]include[/\\]") or lp:match("[/\\]include$")
-  end
-
   if not matched_src and not has_include_component(dir) then
     table.insert(search_dirs, vim.fs.joinpath(dir, "include"))
   end
@@ -90,8 +131,8 @@ function M.find_all_alternates(bufname)
   for _, s_dir in ipairs(search_dirs) do
     if vim.uv.fs_stat(s_dir) then
       for _, sfx in ipairs(suffixes) do
-        for _, ext in ipairs(extensions) do
-          local target_name = base .. sfx .. "." .. ext
+        for _, target_ext in ipairs(search_extensions) do
+          local target_name = base .. sfx .. "." .. target_ext
           local full = vim.fs.joinpath(s_dir, target_name)
 
           local k = keypath(full)
