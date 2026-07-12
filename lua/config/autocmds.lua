@@ -108,3 +108,86 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.formatoptions:append("t") -- auto-wrap text using textwidth
   end,
 })
+
+-- Log file location jump map (gd)
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "log",
+  callback = function(event)
+    vim.keymap.set("n", "gd", function()
+      local line = vim.api.nvim_get_current_line()
+      local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+
+      -- Matches: filename:linenumber
+      local pattern = "([%w_%.%-%/%\\]+):(%d+)"
+      local file, lnum
+      local start_idx = 1
+      while true do
+        local s, e, f, l = line:find(pattern, start_idx)
+        if not s then break end
+        if col >= s and col <= e then
+          file = f
+          lnum = tonumber(l)
+          break
+        end
+        start_idx = e + 1
+      end
+
+      -- Fallback: if cursor is not directly on a match, check if there is exactly one match in the line
+      if not file then
+        start_idx = 1
+        local first_file, first_lnum
+        local count = 0
+        while true do
+          local s, e, f, l = line:find(pattern, start_idx)
+          if not s then break end
+          first_file = f
+          first_lnum = tonumber(l)
+          count = count + 1
+          start_idx = e + 1
+        end
+        if count == 1 then
+          file = first_file
+          lnum = first_lnum
+        end
+      end
+
+      if not file or not lnum then
+        vim.notify("No filename:linenumber found on this line", vim.log.levels.WARN)
+        return
+      end
+
+      local basename = vim.fn.fnamemodify(file, ":t")
+      local root = vim.fs.root(0, { ".git", ".neoconf.json" }) or vim.uv.cwd()
+      local matches = vim.fs.find(basename, {
+        path = root,
+        upward = false,
+        type = "file",
+        limit = 10,
+      })
+
+      if #matches == 1 then
+        vim.cmd("edit " .. vim.fn.fnameescape(matches[1]))
+        vim.api.nvim_win_set_cursor(0, { lnum, 0 })
+        vim.cmd("normal! zz")
+      elseif #matches > 1 then
+        require("snacks").picker.select(matches, {
+          prompt = "Select File (" .. basename .. ":" .. lnum .. ")",
+          format_item = function(item)
+            return vim.fn.fnamemodify(item, ":.")
+          end,
+        }, function(choice)
+          if choice then
+            vim.cmd("edit " .. vim.fn.fnameescape(choice))
+            vim.schedule(function()
+              pcall(vim.api.nvim_win_set_cursor, 0, { lnum, 0 })
+              vim.cmd("normal! zz")
+            end)
+          end
+        end)
+      else
+        -- Fallback: open Snacks files picker prefilled with the basename
+        require("snacks").picker.files({ search = basename })
+      end
+    end, { buffer = event.buf, desc = "Go to log source location" })
+  end,
+})
