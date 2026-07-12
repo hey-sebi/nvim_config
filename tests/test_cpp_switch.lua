@@ -43,8 +43,9 @@ local files_to_create = {
   base_dir .. "/CapitalUnit/Src/bar.cpp",
   base_dir .. "/CapitalUnit/Include/bar.h",
   
-  base_dir .. "/UpperUnit/SOURCE/bazPrivate.cpp",
-  base_dir .. "/UpperUnit/INCLUDE/baz.h",
+  -- 3. Nested layout from user project
+  base_dir .. "/app_src/src/data_pipeline/src/meta_record.cpp",
+  base_dir .. "/app_src/src/data_pipeline/include/data_pipeline/meta_record.h",
 }
 
 for _, f in ipairs(files_to_create) do
@@ -81,8 +82,8 @@ test(base_dir .. "/CamelCaseUnit/include/CamelCaseUnit/foo.h", base_dir .. "/Cam
 test(base_dir .. "/CapitalUnit/Src/bar.cpp", base_dir .. "/CapitalUnit/Include/bar.h")
 test(base_dir .. "/CapitalUnit/Include/bar.h", base_dir .. "/CapitalUnit/Src/bar.cpp")
 
-test(base_dir .. "/UpperUnit/SOURCE/bazPrivate.cpp", base_dir .. "/UpperUnit/INCLUDE/baz.h")
-test(base_dir .. "/UpperUnit/INCLUDE/baz.h", base_dir .. "/UpperUnit/SOURCE/bazPrivate.cpp")
+test(base_dir .. "/app_src/src/data_pipeline/src/meta_record.cpp", base_dir .. "/app_src/src/data_pipeline/include/data_pipeline/meta_record.h")
+test(base_dir .. "/app_src/src/data_pipeline/include/data_pipeline/meta_record.h", base_dir .. "/app_src/src/data_pipeline/src/meta_record.cpp")
 
 -- Clean up
 local function rm_rf(path)

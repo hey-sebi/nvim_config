@@ -110,7 +110,6 @@ function M.find_all_alternates(bufname)
     if count > 0 then
       table.insert(search_dirs, alt_dir)
       matched_src = true
-      break -- Only apply the first match (e.g. if src/ matched, don't need to try others)
     end
   end
 
