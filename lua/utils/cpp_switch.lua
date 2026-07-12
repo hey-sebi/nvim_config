@@ -47,12 +47,23 @@ function M.find_all_alternates(bufname)
     { pattern = "(.*)/source/(.*)", repl = "%1/include/%2" },
     { pattern = "(.*)/source$", repl = "%1/include" },
   }
+  local matched_src = false
   for _, item in ipairs(src_to_include_patterns) do
     local alt_dir, count = dir:gsub(item.pattern, item.repl)
     if count > 0 then
       table.insert(search_dirs, alt_dir)
+      matched_src = true
       break -- Only apply the first match (e.g. if src/ matched, don't need to try others)
     end
+  end
+
+  local function has_include_component(p)
+    local lp = p:lower()
+    return lp:match("[/\\]include[/\\]") or lp:match("[/\\]include$")
+  end
+
+  if not matched_src and not has_include_component(dir) then
+    table.insert(search_dirs, vim.fs.joinpath(dir, "include"))
   end
 
   -- Try swapping include to src/source
@@ -61,6 +72,9 @@ function M.find_all_alternates(bufname)
     { pattern = "(.*)/include$", repl = "%1/src" },
     { pattern = "(.*)/include/(.*)", repl = "%1/source/%2" },
     { pattern = "(.*)/include$", repl = "%1/source" },
+    { pattern = "(.*)/include/(.*)", repl = "%1/%2" },
+    { pattern = "(.*)/include/(.*)", repl = "%1" },
+    { pattern = "(.*)/include$", repl = "%1" },
   }
   for _, item in ipairs(include_to_src_patterns) do
     local alt_dir, count = dir:gsub(item.pattern, item.repl)
