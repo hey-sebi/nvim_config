@@ -19,6 +19,30 @@ return {
     opts = {
       servers = {
         lua_ls = {},
+        -- 1. clangd: Disable codebase-wide background indexing and limit worker threads
+        clangd = {
+          cmd = {
+            "clangd",
+            "--background-index=false", -- Disable background indexing of the entire codebase
+            "--clang-tidy",
+            "--header-insertion=iwyu",
+            "--completion-style=detailed",
+            "--function-arg-placeholders=false",
+            "--fallback-style=llvm",
+            "-j=2", -- Limit helper threads to 2 to prevent CPU starvation
+          },
+        },
+        -- 2. yamlls: Disable automatic SchemaStore fetching and workspace-wide scans
+        yamlls = {
+          settings = {
+            yaml = {
+              schemaStore = {
+                enable = false,
+                url = "",
+              },
+            },
+          },
+        },
       },
     },
   },
