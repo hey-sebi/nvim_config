@@ -172,19 +172,23 @@ function M.find_all_alternates(bufname)
               table.insert(found, full)
               seen[k] = true
             else
-              -- Fallback: recursively search downward in s_dir (e.g. nested inside include/baz/bar)
-              local matches = vim.fs.find(target_name, {
-                path = s_dir,
-                upward = false,
-                type = "file",
-                limit = 1,
-              })
-              if matches[1] then
-                local match_path = vim.fs.normalize(matches[1])
-                local mk = keypath(match_path)
-                if not seen[mk] then
-                  table.insert(found, match_path)
-                  seen[mk] = true
+              -- Only search downward recursively if s_dir is not the project root (to prevent huge freezes)
+              local root = vim.fs.root(0, { ".git", ".neoconf.json" }) or vim.uv.cwd()
+              if keypath(s_dir) ~= keypath(root) then
+                -- Fallback: recursively search downward in s_dir (e.g. nested inside include/baz/bar)
+                local matches = vim.fs.find(target_name, {
+                  path = s_dir,
+                  upward = false,
+                  type = "file",
+                  limit = 1,
+                })
+                if matches[1] then
+                  local match_path = vim.fs.normalize(matches[1])
+                  local mk = keypath(match_path)
+                  if not seen[mk] then
+                    table.insert(found, match_path)
+                    seen[mk] = true
+                  end
                 end
               end
             end

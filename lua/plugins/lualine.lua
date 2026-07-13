@@ -11,26 +11,30 @@ return {
         return vim.b.follow_mode_enabled and "FOLLOW" or ""
       end
 
-      --- Adds an "alternate file exists" indicator (currently only for C++)
+      -- Define an autocmd to cache alternate file existence on BufEnter/BufWritePost
+      local cpp_group = vim.api.nvim_create_augroup("LualineCppAlt", { clear = true })
+      vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost" }, {
+        group = cpp_group,
+        pattern = { "*.h", "*.hpp", "*.hh", "*.hxx", "*.cpp", "*.cc", "*.cxx", "*.c" },
+        callback = function(event)
+          local ok, cpp_switch = pcall(require, "utils.cpp_switch")
+          if ok then
+            local bufname = vim.api.nvim_buf_get_name(event.buf)
+            if bufname ~= "" then
+              local alternates = cpp_switch.find_all_alternates(bufname)
+              vim.b[event.buf].alternate_file_exists = #alternates > 0
+            end
+          end
+        end,
+      })
+
+      --- Adds an "alternate file exists" indicator (reads from cached variable)
       --- @return string
       local function alt_indicator()
-        -- Robust loading of our utility
-        local ok, cpp_switch = pcall(require, "utils.cpp_switch")
-        if not ok then
-          return ""
+        if vim.b.alternate_file_exists then
+          return "󰈔 Alt"
         end
-
-        if vim.bo.buftype ~= "" then
-          return ""
-        end
-        local bufname = vim.api.nvim_buf_get_name(0)
-        if bufname == "" then
-          return ""
-        end
-
-        -- Manual check (must be fast for statusline)
-        local alternates = cpp_switch.find_all_alternates(bufname)
-        return #alternates > 0 and "󰈔 Alt" or ""
+        return ""
       end
 
       -- Prepend custom items. Note: Lualine renders them in the order inserted.
