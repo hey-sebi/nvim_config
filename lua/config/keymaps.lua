@@ -44,8 +44,8 @@ vim.keymap.set("x", "<leader>rc", [["yy:let @/ = '\V' . escape(@", '/\')<CR>:set
 --  Quality of life
 -- ---------------------------------------------
 -- Recenter after C-d or C-u
-vim.keymap.set("n", "<C-d>", "<C-d>zz")
-vim.keymap.set("n", "<C-u>", "<C-u>zz")
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Scroll down and recenter" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Scroll up and recenter" })
 
 -- Recenter after moving to next or previous search result
 vim.keymap.set("n", "n", "nzzzv")
