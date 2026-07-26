@@ -89,18 +89,30 @@ function M.find_all_alternates(bufname)
   -- Try swapping src/source to include
   local src_to_include_patterns = {
     -- Lowercase
+    { pattern = "(.*)/src/lib/(.*)", repl = "%1/include/%2" },
+    { pattern = "(.*)/src/libs/(.*)", repl = "%1/include/%2" },
     { pattern = "(.*)/src/(.*)", repl = "%1/include/%2" },
     { pattern = "(.*)/src$", repl = "%1/include" },
+    { pattern = "(.*)/source/lib/(.*)", repl = "%1/include/%2" },
+    { pattern = "(.*)/source/libs/(.*)", repl = "%1/include/%2" },
     { pattern = "(.*)/source/(.*)", repl = "%1/include/%2" },
     { pattern = "(.*)/source$", repl = "%1/include" },
     -- Capitalized
+    { pattern = "(.*)/Src/Lib/(.*)", repl = "%1/Include/%2" },
+    { pattern = "(.*)/Src/Libs/(.*)", repl = "%1/Include/%2" },
     { pattern = "(.*)/Src/(.*)", repl = "%1/Include/%2" },
     { pattern = "(.*)/Src$", repl = "%1/Include" },
+    { pattern = "(.*)/Source/Lib/(.*)", repl = "%1/Include/%2" },
+    { pattern = "(.*)/Source/Libs/(.*)", repl = "%1/Include/%2" },
     { pattern = "(.*)/Source/(.*)", repl = "%1/Include/%2" },
     { pattern = "(.*)/Source$", repl = "%1/Include" },
     -- Uppercase
+    { pattern = "(.*)/SRC/LIB/(.*)", repl = "%1/INCLUDE/%2" },
+    { pattern = "(.*)/SRC/LIBS/(.*)", repl = "%1/INCLUDE/%2" },
     { pattern = "(.*)/SRC/(.*)", repl = "%1/INCLUDE/%2" },
     { pattern = "(.*)/SRC$", repl = "%1/INCLUDE" },
+    { pattern = "(.*)/SOURCE/LIB/(.*)", repl = "%1/INCLUDE/%2" },
+    { pattern = "(.*)/SOURCE/LIBS/(.*)", repl = "%1/INCLUDE/%2" },
     { pattern = "(.*)/SOURCE/(.*)", repl = "%1/INCLUDE/%2" },
     { pattern = "(.*)/SOURCE$", repl = "%1/INCLUDE" },
   }
@@ -122,8 +134,12 @@ function M.find_all_alternates(bufname)
   -- Try swapping include to src/source
   local include_to_src_patterns = {
     -- Lowercase
+    { pattern = "(.*)/include/(.*)", repl = "%1/src/lib/%2" },
+    { pattern = "(.*)/include/(.*)", repl = "%1/src/libs/%2" },
     { pattern = "(.*)/include/(.*)", repl = "%1/src/%2" },
     { pattern = "(.*)/include$", repl = "%1/src" },
+    { pattern = "(.*)/include/(.*)", repl = "%1/source/lib/%2" },
+    { pattern = "(.*)/include/(.*)", repl = "%1/source/libs/%2" },
     { pattern = "(.*)/include/(.*)", repl = "%1/source/%2" },
     { pattern = "(.*)/include$", repl = "%1/source" },
     { pattern = "(.*)/include/(.*)", repl = "%1/%2" },
@@ -131,8 +147,12 @@ function M.find_all_alternates(bufname)
     { pattern = "(.*)/include$", repl = "%1" },
 
     -- Capitalized
+    { pattern = "(.*)/Include/(.*)", repl = "%1/Src/Lib/%2" },
+    { pattern = "(.*)/Include/(.*)", repl = "%1/Src/Libs/%2" },
     { pattern = "(.*)/Include/(.*)", repl = "%1/Src/%2" },
     { pattern = "(.*)/Include$", repl = "%1/Src" },
+    { pattern = "(.*)/Include/(.*)", repl = "%1/Source/Lib/%2" },
+    { pattern = "(.*)/Include/(.*)", repl = "%1/Source/Libs/%2" },
     { pattern = "(.*)/Include/(.*)", repl = "%1/Source/%2" },
     { pattern = "(.*)/Include$", repl = "%1/Source" },
     { pattern = "(.*)/Include/(.*)", repl = "%1/%2" },
@@ -140,8 +160,12 @@ function M.find_all_alternates(bufname)
     { pattern = "(.*)/Include$", repl = "%1" },
 
     -- Uppercase
+    { pattern = "(.*)/INCLUDE/(.*)", repl = "%1/SRC/LIB/%2" },
+    { pattern = "(.*)/INCLUDE/(.*)", repl = "%1/SRC/LIBS/%2" },
     { pattern = "(.*)/INCLUDE/(.*)", repl = "%1/SRC/%2" },
     { pattern = "(.*)/INCLUDE$", repl = "%1/SRC" },
+    { pattern = "(.*)/INCLUDE/(.*)", repl = "%1/SOURCE/LIB/%2" },
+    { pattern = "(.*)/INCLUDE/(.*)", repl = "%1/SOURCE/LIBS/%2" },
     { pattern = "(.*)/INCLUDE/(.*)", repl = "%1/SOURCE/%2" },
     { pattern = "(.*)/INCLUDE$", repl = "%1/SOURCE" },
     { pattern = "(.*)/INCLUDE/(.*)", repl = "%1/%2" },
