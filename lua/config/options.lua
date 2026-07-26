@@ -13,6 +13,9 @@
 -- vim.g.root_spec = { { ".git", "lua" }, "cwd", "lsp" }
 vim.g.root_spec = { "cwd" }
 
+-- Always keep 10 lines visible above/below cursor
+vim.opt.scrolloff = 10
+
 -- ---------------------------------------------
 --  Windows specific settings
 -- ---------------------------------------------
