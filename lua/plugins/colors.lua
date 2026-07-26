@@ -1,4 +1,65 @@
 return {
+  -- Configure LazyVim active colorscheme
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "catppuccin-macchiato",
+    },
+  },
+
+  -- Catppuccin theme configuration
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    cond = not vim.g.vscode,
+    priority = 1000,
+    opts = {
+      flavour = "macchiato", -- latte, frappe, macchiato, mocha
+      background = {
+        light = "macchiato",
+        dark = "frappe",
+      },
+      transparent_background = false,
+      show_end_of_buffer = false,
+      term_colors = true,
+      dim_inactive = {
+        enabled = false,
+      },
+      no_italic = true,
+      styles = {
+        comments = {},
+        conditionals = {},
+        loops = {},
+        functions = {},
+        keywords = {},
+        strings = {},
+        variables = {},
+        numbers = {},
+        booleans = {},
+        properties = {},
+        types = {},
+        operators = {},
+      },
+      color_overrides = {},
+      custom_highlights = function(colors)
+        return {
+          -- Place custom highlight overrides here
+        }
+      end,
+      integrations = {
+        cmp = true,
+        gitsigns = true,
+        nvimtree = true,
+        treesitter = true,
+        notify = true,
+        mini = {
+          enabled = true,
+        },
+      },
+    },
+  },
+
+  -- Tokyo Night theme configuration
   {
     "folke/tokyonight.nvim",
     cond = not vim.g.vscode,
