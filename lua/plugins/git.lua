@@ -24,6 +24,9 @@ return {
     },
     opts = {
       disable_commit_confirmation = true,
+      status = {
+        show_untracked_files = "normal", -- Collapses untracked directories instead of listing thousands of sub-files
+      },
       integrations = {
         -- Enables integration with diffview.nvim for diffing
         diffview = true,
