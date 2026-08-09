@@ -100,12 +100,26 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Enable text wrapping for Markdown files
+-- Enable text wrapping & keybindings for Markdown files
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "markdown" },
-  callback = function()
+  callback = function(event)
     vim.opt_local.textwidth = 100 -- standard column wrap
     vim.opt_local.formatoptions:append("t") -- auto-wrap text using textwidth
+
+    local mc = require("utils.markdown_checkbox")
+
+    -- <leader>cb: Create checkbox entry (- [ ])
+    vim.keymap.set({ "n", "v" }, "<leader>cb", mc.create_checkbox, {
+      buffer = event.buf,
+      desc = "Markdown: Create checkbox entry",
+    })
+
+    -- <leader>cx: Toggle checkmark (- [ ] <-> - [x])
+    vim.keymap.set({ "n", "v" }, "<leader>cx", mc.toggle_checkbox, {
+      buffer = event.buf,
+      desc = "Markdown: Toggle checkbox",
+    })
   end,
 })
 

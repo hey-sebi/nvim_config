@@ -19,3 +19,12 @@ Test invocation:
 nvim --headless -l tests/test_follow_mode.lua
 ```
 
+## markdown_checkbox.lua
+
+Test invocation:
+
+```bash
+nvim --headless -l tests/test_markdown_checkbox.lua
+```
+
+
