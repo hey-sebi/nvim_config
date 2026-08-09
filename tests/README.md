@@ -10,3 +10,12 @@ Test invocation:
 ```bash
 nvim --headless -l tests/test_cpp_switch.lua
 ```
+
+## follow_mode.lua
+
+Test invocation:
+
+```bash
+nvim --headless -l tests/test_follow_mode.lua
+```
+

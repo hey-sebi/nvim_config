@@ -1,17 +1,19 @@
 -- Buffer-local "follow file" mode, similar to `tail -f` / `less +F`.
 -- When enabled for a buffer:
---   - periodically runs :checktime to reload external changes
---   - jumps to EOF (G) if the buffer is visible
+--   - uses OS file system events (vim.uv.fs_event) to detect file updates instantly
+--   - runs :checktime to reload external changes
+--   - jumps to EOF (G) if the buffer is visible in the current window
 
 local M = {}
 
--- check for file changes update interval
-local DEFAULT_INTERVAL_MS = 750
-
 local uv = vim.uv or vim.loop
 
--- timer handles keyed by bufnr
-local timers = {}
+-- Active fs_event watchers keyed by bufnr
+local watchers = {}
+-- Active debounce timers keyed by bufnr
+local debounce_timers = {}
+
+local DEBOUNCE_MS = 50
 
 local function is_buf_valid(bufnr)
   return bufnr and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr)
@@ -47,55 +49,103 @@ local function notify(bufnr, enabled)
   vim.notify(msg, vim.log.levels.INFO, { title = "Follow Mode" })
 end
 
-local function stop_timer(bufnr)
-  local t = timers[bufnr]
-  timers[bufnr] = nil
-
-  if t then
+local function stop_watcher(bufnr)
+  local dt = debounce_timers[bufnr]
+  debounce_timers[bufnr] = nil
+  if dt then
     pcall(function()
-      t:stop()
-      t:close()
+      dt:stop()
+      if not dt:is_closing() then
+        dt:close()
+      end
+    end)
+  end
+
+  local w = watchers[bufnr]
+  watchers[bufnr] = nil
+
+  if w then
+    pcall(function()
+      w:stop()
+      if not w:is_closing() then
+        w:close()
+      end
     end)
   end
 end
 
-local function start_timer(bufnr, interval_ms)
-  stop_timer(bufnr)
+local function trigger_update(bufnr)
+  if not is_buf_valid(bufnr) or vim.b[bufnr].follow_mode_enabled ~= true then
+    stop_watcher(bufnr)
+    return
+  end
 
-  local t = uv.new_timer()
-  timers[bufnr] = t
+  checktime_for_buf(bufnr)
+  jump_to_eof_if_current_win_shows_buf(bufnr)
+end
 
-  t:start(
+local function schedule_update(bufnr)
+  local dt = debounce_timers[bufnr]
+  if not dt then
+    dt = uv.new_timer()
+    debounce_timers[bufnr] = dt
+  else
+    dt:stop()
+  end
+
+  dt:start(
+    DEBOUNCE_MS,
     0,
-    interval_ms,
     vim.schedule_wrap(function()
-      -- buffer gone -> cleanup
-      if not is_buf_valid(bufnr) then
-        stop_timer(bufnr)
-        return
-      end
-
-      -- disabled -> cleanup
-      if vim.b[bufnr].follow_mode_enabled ~= true then
-        stop_timer(bufnr)
-        return
-      end
-
-      checktime_for_buf(bufnr)
-
-      -- Only jump if the *current window* shows this buffer.
-      -- This prevents "mysterious jumping" in other splits/tabs.
-      jump_to_eof_if_current_win_shows_buf(bufnr)
+      trigger_update(bufnr)
     end)
   )
 end
 
--- Ensure we clean up if the buffer is wiped out
+local function start_watcher(bufnr)
+  stop_watcher(bufnr)
+
+  local full_path = vim.api.nvim_buf_get_name(bufnr)
+  if full_path == "" or not uv.fs_stat(full_path) then
+    return
+  end
+
+  local w = uv.new_fs_event()
+  watchers[bufnr] = w
+
+  local ok, err = pcall(function()
+    w:start(
+      full_path,
+      {},
+      vim.schedule_wrap(function(fs_err, filename, events)
+        if fs_err then
+          stop_watcher(bufnr)
+          return
+        end
+
+        if not is_buf_valid(bufnr) or vim.b[bufnr].follow_mode_enabled ~= true then
+          stop_watcher(bufnr)
+          return
+        end
+
+        if events and (events.change or events.rename) then
+          schedule_update(bufnr)
+        end
+      end)
+    )
+  end)
+
+  if not ok or err then
+    stop_watcher(bufnr)
+  end
+end
+
+-- Clean up when buffer is wiped out
 local augroup = vim.api.nvim_create_augroup("FollowMode", { clear = false })
 vim.api.nvim_create_autocmd("BufWipeout", {
   group = augroup,
   callback = function(args)
-    stop_timer(args.buf)
+    stop_watcher(args.buf)
   end,
 })
 
@@ -108,9 +158,8 @@ function M.enable(bufnr, opts)
   end
 
   vim.b[bufnr].follow_mode_enabled = true
-  vim.b[bufnr].follow_mode_interval_ms = opts.interval_ms or vim.b[bufnr].follow_mode_interval_ms or DEFAULT_INTERVAL_MS
 
-  start_timer(bufnr, vim.b[bufnr].follow_mode_interval_ms)
+  start_watcher(bufnr)
   jump_to_eof_if_current_win_shows_buf(bufnr)
   notify(bufnr, true)
 end
@@ -123,7 +172,7 @@ function M.disable(bufnr)
   end
 
   vim.b[bufnr].follow_mode_enabled = false
-  stop_timer(bufnr)
+  stop_watcher(bufnr)
   notify(bufnr, false)
 end
 
@@ -147,3 +196,4 @@ function M.is_enabled(bufnr)
 end
 
 return M
+
