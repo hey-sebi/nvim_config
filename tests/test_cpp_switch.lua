@@ -46,6 +46,14 @@ local files_to_create = {
   -- 3. Nested layout from user project
   base_dir .. "/app_src/src/data_pipeline/src/meta_record.cpp",
   base_dir .. "/app_src/src/data_pipeline/include/data_pipeline/meta_record.h",
+
+  -- 4. Core libs src/lib vs include layout
+  base_dir .. "/project_src/core_libs/src/lib/sys_time/countdown_timer.cpp",
+  base_dir .. "/project_src/core_libs/include/sys_time/countdown_timer.h",
+
+  -- 5. Files at root directory
+  base_dir .. "/main.cpp",
+  base_dir .. "/main.h",
 }
 
 for _, f in ipairs(files_to_create) do
@@ -84,6 +92,12 @@ test(base_dir .. "/CapitalUnit/Include/bar.h", base_dir .. "/CapitalUnit/Src/bar
 
 test(base_dir .. "/app_src/src/data_pipeline/src/meta_record.cpp", base_dir .. "/app_src/src/data_pipeline/include/data_pipeline/meta_record.h")
 test(base_dir .. "/app_src/src/data_pipeline/include/data_pipeline/meta_record.h", base_dir .. "/app_src/src/data_pipeline/src/meta_record.cpp")
+
+test(base_dir .. "/project_src/core_libs/src/lib/sys_time/countdown_timer.cpp", base_dir .. "/project_src/core_libs/include/sys_time/countdown_timer.h")
+test(base_dir .. "/project_src/core_libs/include/sys_time/countdown_timer.h", base_dir .. "/project_src/core_libs/src/lib/sys_time/countdown_timer.cpp")
+
+test(base_dir .. "/main.cpp", base_dir .. "/main.h")
+test(base_dir .. "/main.h", base_dir .. "/main.cpp")
 
 -- Clean up
 local function rm_rf(path)
