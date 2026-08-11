@@ -32,3 +32,47 @@ end
 
 -- Set LSP log level to warn to prevent huge log files
 vim.lsp.set_log_level("warn")
+
+-- Always sync Neovim default yank/paste with the system clipboard register
+vim.opt.clipboard = "unnamedplus"
+
+-- Safe fallback loader for OSC 52
+local function setup_osc52_clipboard()
+  local ok, osc52 = pcall(require, "vim.ui.clipboard.osc52")
+  if not ok then
+    return -- If using an older Neovim version or missing the module, fallback to default behavior
+  end
+
+  -- Safe paste handler: reads from Neovim's internal default register
+  -- This prevents errors when a terminal emulator blocks remote clipboard reading for security reasons
+  local function safe_paste()
+    return {
+      vim.fn.split(vim.fn.getreg('"'), "\n"),
+      vim.fn.getregtype('"'),
+    }
+  end
+
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = {
+      ["+"] = osc52.copy("+"),
+      ["*"] = osc52.copy("*"),
+    },
+    paste = {
+      ["+"] = safe_paste,
+      ["*"] = safe_paste,
+    },
+  }
+end
+
+-- Detect runtime environment dynamically
+local is_remote_or_headless = vim.env.SSH_CONNECTION ~= nil
+  or vim.env.SSH_TTY ~= nil
+  or vim.env.TMUX ~= nil
+  or vim.fn.has("gui_running") == 0
+
+-- On headless/remote/SSH servers, force OSC 52 byte-streaming
+-- On local desktop instances (Windows/Linux GUI), let Neovim auto-detect native APIs (win32yank, wl-copy, xclip)
+if is_remote_or_headless and vim.fn.has("win32") == 0 then
+  setup_osc52_clipboard()
+end
