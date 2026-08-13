@@ -24,9 +24,12 @@ return {
     "linux-cultist/venv-selector.nvim",
     opts = {
       settings = {
+        options = {
+          notify_user_on_venv_activation = false,
+        },
         search = {
           my_venvs = {
-            command = "fd python.exe$ -H -I -a -E .git -E .venv -E venv -E .direnv",
+            command = "fd python.exe$ -a -E .git -E build -E out -E node_modules",
           },
         },
       },
