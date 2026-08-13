@@ -1,44 +1,61 @@
 local function neogit_submodule_picker()
-  local git_root_output = vim.fn.systemlist("git rev-parse --show-toplevel")
-  if vim.v.shell_error ~= 0 or #git_root_output == 0 then
+  local git_root = vim.fs.root(0, { ".git", ".gitmodules" })
+  if not git_root then
     vim.notify("Not in a git repository", vim.log.levels.WARN, { title = "Git Submodules" })
     return
   end
-  local git_root = git_root_output[1]
 
-  local lines = vim.fn.systemlist("git submodule status --recursive")
-  if vim.v.shell_error ~= 0 or #lines == 0 then
-    lines = vim.fn.systemlist("git config --file .gitmodules --get-regexp path")
+  local gitmodules_files = vim.fs.find(".gitmodules", {
+    path = git_root,
+    upward = false,
+    limit = math.huge,
+  })
+
+  if #gitmodules_files == 0 then
+    vim.notify("No .gitmodules files found", vim.log.levels.INFO, { title = "Git Submodules" })
+    return
   end
 
   local items = {}
-  for _, line in ipairs(lines) do
-    line = line:gsub("^%s+", "")
-    if line ~= "" then
-      local path
-      if line:match("^[%+%-U%s]?%x+%s+") then
-        path = line:match("^[%+%-U%s]?%x+%s+(.-)%s*%(") or line:match("^[%+%-U%s]?%x+%s+(.-)$")
-      elseif line:match("^submodule%..*%.path%s+") then
-        path = line:match("^submodule%..*%.path%s+(.-)$")
-      else
-        path = line
-      end
+  local seen = {}
 
-      if path and path ~= "" then
-        path = vim.trim(path)
-        local abs_path = git_root .. "/" .. path
-        table.insert(items, {
-          text = path,
-          file = abs_path,
-        })
+  for _, gm_path in ipairs(gitmodules_files) do
+    local norm_gm = vim.fs.normalize(gm_path)
+    -- Skip .gitmodules located inside .git, node_modules, build, out folders
+    if not norm_gm:find("/%.git/") and not norm_gm:find("/node_modules/") and not norm_gm:find("/build/") and not norm_gm:find("/out/") then
+      local base_dir = vim.fs.dirname(norm_gm)
+      local f = io.open(norm_gm, "r")
+      if f then
+        for line in f:lines() do
+          local path = line:match("^%s*path%s*=%s*(.-)%s*$")
+          if path and path ~= "" then
+            local abs_path = vim.fs.normalize(base_dir .. "/" .. path)
+            if not seen[abs_path] and vim.uv.fs_stat(abs_path) then
+              seen[abs_path] = true
+              local rel_path = vim.fn.fnamemodify(abs_path, ":.")
+              if rel_path:sub(1, 2) == "./" then
+                rel_path = rel_path:sub(3)
+              end
+              table.insert(items, {
+                text = rel_path,
+                file = abs_path,
+              })
+            end
+          end
+        end
+        f:close()
       end
     end
   end
 
   if #items == 0 then
-    vim.notify("No git submodules found in this repository", vim.log.levels.INFO, { title = "Git Submodules" })
+    vim.notify("No git submodules found in .gitmodules", vim.log.levels.INFO, { title = "Git Submodules" })
     return
   end
+
+  table.sort(items, function(a, b)
+    return a.text < b.text
+  end)
 
   require("snacks").picker({
     prompt = "Git Submodules",
