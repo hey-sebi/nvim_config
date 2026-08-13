@@ -17,14 +17,19 @@ return {
         group = cpp_group,
         pattern = { "*.h", "*.hpp", "*.hh", "*.hxx", "*.cpp", "*.cc", "*.cxx", "*.c" },
         callback = function(event)
-          local ok, cpp_switch = pcall(require, "utils.cpp_switch")
-          if ok then
-            local bufname = vim.api.nvim_buf_get_name(event.buf)
-            if bufname ~= "" then
-              local alternates = cpp_switch.find_all_alternates(bufname)
-              vim.b[event.buf].alternate_file_exists = #alternates > 0
+          vim.schedule(function()
+            if not vim.api.nvim_buf_is_valid(event.buf) then
+              return
             end
-          end
+            local ok, cpp_switch = pcall(require, "utils.cpp_switch")
+            if ok then
+              local bufname = vim.api.nvim_buf_get_name(event.buf)
+              if bufname ~= "" then
+                local alternates = cpp_switch.find_all_alternates(bufname)
+                vim.b[event.buf].alternate_file_exists = #alternates > 0
+              end
+            end
+          end)
         end,
       })
 
