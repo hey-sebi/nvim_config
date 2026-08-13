@@ -179,7 +179,7 @@ function M.find_all_alternates(bufname)
     end
   end
 
-  -- 3. Search for all permutations
+  -- 3. Phase 1: Fast direct fs_stat checks for all path pattern swaps (instant)
   local found = {}
   local seen = { [keypath(full_path)] = true }
 
@@ -191,46 +191,40 @@ function M.find_all_alternates(bufname)
           local full = vim.fs.joinpath(s_dir, target_name)
 
           local k = keypath(full)
-          if not seen[k] then
-            if vim.uv.fs_stat(full) then
-              table.insert(found, full)
-              seen[k] = true
-            else
-              -- Only search downward recursively if s_dir is not the project root (to prevent huge freezes)
-              local root = vim.fs.root(0, { ".git", ".neoconf.json" }) or vim.uv.cwd()
-              if keypath(s_dir) ~= keypath(root) then
-                -- Fallback: search downward in s_dir (bounded to max depth to prevent freezes)
-                local count_sep = function(p)
-                  local _, c = p:gsub("[/\\]", "")
-                  return c
-                end
-                local base_depth = count_sep(s_dir)
-                local matches = vim.fs.find(function(name, path)
-                  if (count_sep(path) - base_depth) > 5 then
-                    return false
-                  end
-                  return name == target_name
-                end, {
-                  path = s_dir,
-                  upward = false,
-                  type = "file",
-                  limit = 1,
-                })
-                if matches[1] then
-                  local match_path = vim.fs.normalize(matches[1])
-                  local mk = keypath(match_path)
-                  if not seen[mk] then
-                    table.insert(found, match_path)
-                    seen[mk] = true
-                  end
-                end
-              end
-            end
+          if not seen[k] and vim.uv.fs_stat(full) then
+            table.insert(found, full)
+            seen[k] = true
           end
         end
       end
     end
   end
+
+  -- Phase 2: If direct stat found targets, return immediately!
+  if #found > 0 then
+    return found
+  end
+
+  -- Phase 3: Ultra-fast ripgrep (rg) workspace search if direct stat missed (170ms)
+  local root = vim.fs.root(0, { ".git", ".neoconf.json" }) or vim.uv.cwd()
+  local glob_pattern = base .. "*"
+  local cmd = { "rg", "--files", "--ignore-case", "-g", glob_pattern }
+
+  local ok, lines = pcall(vim.fn.systemlist, cmd)
+  if ok and type(lines) == "table" then
+    for _, rel_file in ipairs(lines) do
+      local full_file = vim.fs.normalize(vim.fs.joinpath(root, rel_file))
+      local file_ext = full_file:match("%.([^%.]+)$") or ""
+      if is_header_ext(ext) ~= is_header_ext(file_ext) then
+        local k = keypath(full_file)
+        if not seen[k] and vim.uv.fs_stat(full_file) then
+          table.insert(found, full_file)
+          seen[k] = true
+        end
+      end
+    end
+  end
+
   return found
 end
 
