@@ -199,8 +199,18 @@ function M.find_all_alternates(bufname)
               -- Only search downward recursively if s_dir is not the project root (to prevent huge freezes)
               local root = vim.fs.root(0, { ".git", ".neoconf.json" }) or vim.uv.cwd()
               if keypath(s_dir) ~= keypath(root) then
-                -- Fallback: recursively search downward in s_dir (e.g. nested inside include/baz/bar)
-                local matches = vim.fs.find(target_name, {
+                -- Fallback: search downward in s_dir (bounded to max depth to prevent freezes)
+                local count_sep = function(p)
+                  local _, c = p:gsub("[/\\]", "")
+                  return c
+                end
+                local base_depth = count_sep(s_dir)
+                local matches = vim.fs.find(function(name, path)
+                  if (count_sep(path) - base_depth) > 5 then
+                    return false
+                  end
+                  return name == target_name
+                end, {
                   path = s_dir,
                   upward = false,
                   type = "file",
