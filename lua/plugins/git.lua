@@ -1,5 +1,14 @@
-local function neogit_submodule_picker()
-  local git_root = vim.fs.root(0, { ".git", ".gitmodules" })
+local function neogit_submodule_picker(opts)
+  opts = opts or {}
+  local use_local_buf = opts.local_buf or false
+
+  local git_root = nil
+  if use_local_buf then
+    git_root = vim.fs.root(0, { ".git", ".gitmodules" })
+  else
+    git_root = vim.fs.root(vim.uv.cwd(), { ".git", ".gitmodules" }) or vim.uv.cwd()
+  end
+
   if not git_root then
     vim.notify("Not in a git repository", vim.log.levels.WARN, { title = "Git Submodules" })
     return
@@ -57,14 +66,16 @@ local function neogit_submodule_picker()
     return a.text < b.text
   end)
 
+  local prompt_title = use_local_buf and "Git Submodules (Current Repo)" or "Git Submodules (Root Repo)"
+
   require("snacks").picker({
-    prompt = "Git Submodules",
+    prompt = prompt_title,
     items = items,
     format = "file",
     confirm = function(picker, item)
       picker:close()
       if item and item.file then
-        vim.cmd("Neogit cwd=" .. vim.fn.fnameescape(item.file))
+        vim.cmd("Neogit kind=vsplit cwd=" .. vim.fn.fnameescape(item.file))
       end
     end,
   })
@@ -91,12 +102,21 @@ return {
     },
     cmd = { "Neogit" },
     keys = {
-      { "<leader>gg", "<cmd>Neogit<cr>", desc = "Neogit Status (Tab)" },
-      { "<leader>gG", "<cmd>Neogit kind=floating<cr>", desc = "Neogit Status (Float)" },
+      { "<leader>gg", "<cmd>Neogit kind=vsplit<cr>", desc = "Neogit Status (Side Split)" },
+      { "<leader>gG", "<cmd>Neogit kind=tab<cr>", desc = "Neogit Status (Tab)" },
       {
         "<leader>gm",
-        neogit_submodule_picker,
-        desc = "Neogit Submodule Picker",
+        function()
+          neogit_submodule_picker({ local_buf = false })
+        end,
+        desc = "Neogit Submodule Picker (Root Repo)",
+      },
+      {
+        "<leader>gM",
+        function()
+          neogit_submodule_picker({ local_buf = true })
+        end,
+        desc = "Neogit Submodule Picker (Current Repo)",
       },
     },
     opts = {
