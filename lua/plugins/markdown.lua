@@ -1,3 +1,10 @@
+-- REQUIREMENTS:
+--  1) LaTeX support
+--    for LaTeX support in nvim we need to install `pylatexenc`: pip install pylatexenc
+--  2) PDF rendering, install pandoc and typst
+--    PDF with markdown support: npm install -g mermaid-filter
+--    [Windows] scoop install pandoc typst
+
 local prettier_config_files = {
   ".prettierrc",
   ".prettierrc.json",
@@ -43,6 +50,51 @@ local function has_markdownlint_config(dir)
     return false
   end
   return vim.fs.root(dir, markdownlint_config_files) ~= nil
+end
+
+local function export_markdown_to_pdf()
+  local buf = vim.api.nvim_get_current_buf()
+  local file = vim.api.nvim_buf_get_name(buf)
+
+  if file == "" or vim.bo[buf].filetype ~= "markdown" then
+    vim.notify("Active buffer is not a saved Markdown file", vim.log.levels.WARN, { title = "Markdown Export" })
+    return
+  end
+
+  if vim.fn.executable("pandoc") ~= 1 then
+    vim.notify("pandoc executable not found in PATH", vim.log.levels.ERROR, { title = "Markdown Export" })
+    return
+  end
+
+  -- Save if modified
+  if vim.bo[buf].modified then
+    vim.cmd("silent! write")
+  end
+
+  local pdf_file = vim.fn.fnamemodify(file, ":r") .. ".pdf"
+  local pdf_name = vim.fn.fnamemodify(pdf_file, ":t")
+
+  vim.notify("Compiling " .. pdf_name .. "...", vim.log.levels.INFO, { title = "Markdown Export" })
+
+  local cmd = { "pandoc", file, "-o", pdf_file, "--pdf-engine=typst" }
+  if vim.fn.has("win32") == 1 and vim.fn.executable("mermaid-filter.cmd") == 1 then
+    table.insert(cmd, "-F")
+    table.insert(cmd, "mermaid-filter.cmd")
+  elseif vim.fn.executable("mermaid-filter") == 1 then
+    table.insert(cmd, "-F")
+    table.insert(cmd, "mermaid-filter")
+  end
+
+  vim.system(cmd, { text = true }, function(obj)
+    vim.schedule(function()
+      if obj.code == 0 then
+        vim.notify("Successfully exported: " .. pdf_name, vim.log.levels.INFO, { title = "Markdown Export" })
+      else
+        local err_msg = (obj.stderr and obj.stderr ~= "") and obj.stderr or ("Exit code " .. tostring(obj.code))
+        vim.notify("PDF export failed:\n" .. err_msg, vim.log.levels.ERROR, { title = "Markdown Export" })
+      end
+    end)
+  end)
 end
 
 return {
@@ -91,5 +143,16 @@ return {
         end
       end
     end,
+  },
+  {
+    "iamcco/markdown-preview.nvim",
+    keys = {
+      {
+        "<leader>cP",
+        export_markdown_to_pdf,
+        ft = "markdown",
+        desc = "Markdown Export PDF (Pandoc + Typst)",
+      },
+    },
   },
 }

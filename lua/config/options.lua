@@ -27,6 +27,14 @@ if vim.fn.has("win32") == 1 then
   -- Neovide scaling
   vim.g.neovide_scale_factor = 1.0
   vim.o.guifont = "JetBrainsMono Nerd Font:h12"
+
+  -- Ensure Python Scripts directory (pip executables like latex2text) is in PATH
+  local py_scripts = vim.fn.expand("~/AppData/Roaming/Python/Python313/Scripts")
+  if vim.fn.isdirectory(py_scripts) == 1 and not vim.env.PATH:find(py_scripts, 1, true) then
+    vim.env.PATH = py_scripts .. ";" .. vim.env.PATH
+  end
+  vim.env.PYTHONIOENCODING = "utf-8"
+  vim.env.PYTHONUTF8 = "1"
 end
 
 -- Set LSP log level to warn to prevent huge log files
