@@ -61,9 +61,29 @@ local function export_markdown_to_pdf()
     return
   end
 
+  -- Pre-flight checks: Pandoc and Typst
   if vim.fn.executable("pandoc") ~= 1 then
-    vim.notify("pandoc executable not found in PATH", vim.log.levels.ERROR, { title = "Markdown Export" })
+    vim.notify("pandoc is not installed or not in PATH", vim.log.levels.ERROR, { title = "Markdown Export" })
     return
+  end
+
+  if vim.fn.executable("typst") ~= 1 then
+    vim.notify("typst PDF engine is not installed or not in PATH", vim.log.levels.ERROR, { title = "Markdown Export" })
+    return
+  end
+
+  -- Check if document uses mermaid diagrams
+  local content = table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), "\n")
+  local has_mermaid = content:find("```mermaid") ~= nil
+  local has_mermaid_filter = (vim.fn.has("win32") == 1 and vim.fn.executable("mermaid-filter.cmd") == 1)
+    or vim.fn.executable("mermaid-filter") == 1
+
+  if has_mermaid and not has_mermaid_filter then
+    vim.notify(
+      "Mermaid diagram detected, but 'mermaid-filter' is not installed",
+      vim.log.levels.WARN,
+      { title = "Markdown Export" }
+    )
   end
 
   -- Save if modified
@@ -96,6 +116,11 @@ local function export_markdown_to_pdf()
     end)
   end)
 end
+
+-- User command for quick health inspection
+vim.api.nvim_create_user_command("MarkdownHealth", function()
+  vim.cmd("checkhealth utils")
+end, { desc = "Check Markdown and PDF Export tool dependencies" })
 
 return {
   {
