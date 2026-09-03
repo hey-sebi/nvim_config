@@ -24,9 +24,6 @@ if vim.fn.has("win32") == 1 then
   vim.opt.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command"
   vim.opt.shellquote = ""
   vim.opt.shellxquote = ""
-  -- Neovide scaling
-  vim.g.neovide_scale_factor = 1.0
-  vim.o.guifont = "JetBrainsMono Nerd Font:h12"
 
   -- Ensure Python Scripts directory (pip executables like latex2text) is in PATH
   local py_scripts = vim.fn.expand("~/AppData/Roaming/Python/Python313/Scripts")
@@ -37,6 +34,12 @@ if vim.fn.has("win32") == 1 then
   vim.env.PYTHONUTF8 = "1"
 end
 
+if vim.g.neovide then
+  -- Neovide settings
+  vim.g.neovide_scale_factor = 1.0
+  -- Use the "NL" (No Ligatures) variant of JetBrains Mono to disable ligatures
+  vim.o.guifont = "JetBrainsMonoNL Nerd Font:h12"
+end
 -- Set LSP log level to warn to prevent huge log files
 vim.lsp.set_log_level("warn")
 
