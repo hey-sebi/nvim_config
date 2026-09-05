@@ -15,25 +15,6 @@ vim.g.root_spec = { "cwd" }
 -- Always keep 10 lines visible above/below cursor
 vim.opt.scrolloff = 10
 
--- ---------------------------------------------
---  Windows specific settings
--- ---------------------------------------------
-if vim.fn.has("win32") == 1 then
-  -- Use PowerShell Core instead of cmd as shell
-  vim.opt.shell = "pwsh.exe"
-  vim.opt.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command"
-  vim.opt.shellquote = ""
-  vim.opt.shellxquote = ""
-
-  -- Ensure Python Scripts directory (pip executables like latex2text) is in PATH
-  local py_scripts = vim.fn.expand("~/AppData/Roaming/Python/Python313/Scripts")
-  if vim.fn.isdirectory(py_scripts) == 1 and not vim.env.PATH:find(py_scripts, 1, true) then
-    vim.env.PATH = py_scripts .. ";" .. vim.env.PATH
-  end
-  vim.env.PYTHONIOENCODING = "utf-8"
-  vim.env.PYTHONUTF8 = "1"
-end
-
 if vim.g.neovide then
   -- Neovide settings
   vim.g.neovide_scale_factor = 1.0
@@ -45,6 +26,12 @@ vim.lsp.set_log_level("warn")
 
 -- Always sync Neovim default yank/paste with the system clipboard register
 vim.opt.clipboard = "unnamedplus"
+
+-- Detect runtime environment dynamically
+local is_remote_or_headless = vim.env.SSH_CONNECTION ~= nil
+  or vim.env.SSH_TTY ~= nil
+  or vim.env.TMUX ~= nil
+  or vim.fn.has("gui_running") == 0
 
 -- Safe fallback loader for OSC 52
 local function setup_osc52_clipboard()
@@ -75,14 +62,30 @@ local function setup_osc52_clipboard()
   }
 end
 
--- Detect runtime environment dynamically
-local is_remote_or_headless = vim.env.SSH_CONNECTION ~= nil
-  or vim.env.SSH_TTY ~= nil
-  or vim.env.TMUX ~= nil
-  or vim.fn.has("gui_running") == 0
-
+-- ---------------------------------------------
+--  Linux/MacOS specific settings
+-- ---------------------------------------------
 -- On headless/remote/SSH servers, force OSC 52 byte-streaming
 -- On local desktop instances (Windows/Linux GUI), let Neovim auto-detect native APIs (win32yank, wl-copy, xclip)
 if is_remote_or_headless and vim.fn.has("win32") == 0 then
   setup_osc52_clipboard()
+end
+
+-- ---------------------------------------------
+--  Windows specific settings
+-- ---------------------------------------------
+if vim.fn.has("win32") == 1 then
+  -- Use PowerShell Core instead of cmd as shell
+  vim.opt.shell = "pwsh.exe"
+  vim.opt.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command"
+  vim.opt.shellquote = ""
+  vim.opt.shellxquote = ""
+
+  -- Ensure Python Scripts directory (pip executables like latex2text) is in PATH
+  local py_scripts = vim.fn.expand("~/AppData/Roaming/Python/Python313/Scripts")
+  if vim.fn.isdirectory(py_scripts) == 1 and not vim.env.PATH:find(py_scripts, 1, true) then
+    vim.env.PATH = py_scripts .. ";" .. vim.env.PATH
+  end
+  vim.env.PYTHONIOENCODING = "utf-8"
+  vim.env.PYTHONUTF8 = "1"
 end
