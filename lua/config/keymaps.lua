@@ -165,12 +165,24 @@ if not vim.g.vscode then
   vim.keymap.set({ "i", "s" }, "<C-p>", lsc.jump_if_jumpable, { silent = true })
 end
 -- ---------------------------------------------------------------------------
---  C++: Switch between header and implementation
+--  C++: Switch between header/source and Implement functions
 -- ---------------------------------------------------------------------------
 if not vim.g.vscode then
   local cpp_switch = require("utils.cpp_switch")
   vim.keymap.set("n", "<leader>fa", cpp_switch.switch_smart, { desc = "Switch between header/source" })
   vim.keymap.set("n", "<leader>fA", cpp_switch.switch_smart_vsplit, { desc = "Switch header/source in vertical split" })
+
+  local cpp_implement = require("utils.cpp_implement")
+  vim.keymap.set("n", "<leader>ci", function()
+    cpp_implement.smart_action()
+  end, { desc = "C++ Implement / Declare (smart)" })
+
+  vim.keymap.set("x", "<leader>ci", function()
+    local start_line = math.min(vim.fn.line("v"), vim.fn.line("."))
+    local end_line = math.max(vim.fn.line("v"), vim.fn.line("."))
+    vim.cmd("normal! \27")
+    cpp_implement.smart_action(start_line, end_line)
+  end, { desc = "C++ Implement / Declare selected (smart)" })
 end
 -- ---------------------------------------------------------------------------
 --  Yanky customization

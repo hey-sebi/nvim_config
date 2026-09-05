@@ -59,6 +59,77 @@ local function keypath(path)
   return vim.fs.normalize(path):lower()
 end
 
+--- Get the primary default target extension for a given file extension.
+--- @param ext string
+--- @return string
+local function get_default_target_ext(ext)
+  local e = ext:lower()
+  if e == "hpp" then return "cpp" end
+  if e == "hxx" then return "cxx" end
+  if e == "hh" then return "cc" end
+  if e == "h" then return "cpp" end
+  if e == "cpp" then return "hpp" end
+  if e == "cxx" then return "hxx" end
+  if e == "cc" then return "hh" end
+  if e == "c" then return "h" end
+  return is_header_ext(e) and "cpp" or "hpp"
+end
+
+--- Suggests the best candidate path for an alternate file if none currently exists.
+--- @param full_path string
+--- @return string
+function M.suggest_alternate(full_path)
+  full_path = vim.fs.normalize(full_path)
+  local dir = vim.fn.fnamemodify(full_path, ":h")
+  local fname = vim.fn.fnamemodify(full_path, ":t")
+  local ext = fname:match("%.([^%.]+)$") or ""
+  local stem = fname:match("^(.-)%.[^%.]+$") or fname
+  local target_ext = get_default_target_ext(ext)
+
+  local root = vim.fs.root(full_path, { ".git", ".neoconf.json", "CMakeLists.txt" }) or dir
+
+  local target_dir = dir
+  if is_header_ext(ext) then
+    -- Header -> Source: try include -> src
+    local candidate = nil
+    if dir:match("/include/") or dir:match("/include$") then
+      candidate = dir:gsub("/include/", "/src/"):gsub("/include$", "/src")
+    elseif dir:match("/Include/") or dir:match("/Include$") then
+      candidate = dir:gsub("/Include/", "/Src/"):gsub("/Include$", "/Src")
+    end
+
+    if candidate and (vim.uv.fs_stat(candidate) or vim.uv.fs_stat(root .. "/src") or vim.uv.fs_stat(root .. "/Src")) then
+      target_dir = candidate
+    elseif candidate then
+      target_dir = candidate
+    elseif vim.uv.fs_stat(root .. "/src") then
+      local rel_to_root = vim.fs.normalize(vim.fn.fnamemodify(dir, ":.")):gsub("^include/?", "")
+      target_dir = vim.fs.normalize(root .. "/src/" .. rel_to_root)
+    end
+  else
+    -- Source -> Header: try src -> include
+    local candidate = nil
+    if dir:match("/src/") or dir:match("/src$") then
+      candidate = dir:gsub("/src/", "/include/"):gsub("/src$", "/include")
+    elseif dir:match("/source/") or dir:match("/source$") then
+      candidate = dir:gsub("/source/", "/include/"):gsub("/source$", "/include")
+    elseif dir:match("/Src/") or dir:match("/Src$") then
+      candidate = dir:gsub("/Src/", "/Include/"):gsub("/Src$", "/Include")
+    end
+
+    if candidate and (vim.uv.fs_stat(candidate) or vim.uv.fs_stat(root .. "/include") or vim.uv.fs_stat(root .. "/Include")) then
+      target_dir = candidate
+    elseif candidate then
+      target_dir = candidate
+    elseif vim.uv.fs_stat(root .. "/include") then
+      local rel_to_root = vim.fs.normalize(vim.fn.fnamemodify(dir, ":.")):gsub("^src/?", ""):gsub("^source/?", "")
+      target_dir = vim.fs.normalize(root .. "/include/" .. rel_to_root)
+    end
+  end
+
+  return vim.fs.normalize(target_dir .. "/" .. stem .. "." .. target_ext)
+end
+
 --- Finds all existing alternate files by permutating suffixes and extensions.
 --- @param bufname string The full path to the current buffer.
 --- @return string[] # A list of found file paths.
@@ -228,9 +299,11 @@ function M.find_all_alternates(bufname)
   return found
 end
 
---- Internal orchestrator to resolve the alternate file and execute a callback action.
+--- Orchestrator to resolve the alternate file and execute a callback action.
 --- @param action_fn fun(target: string)
-local function resolve_and_execute(action_fn)
+--- @param opts? { create_if_missing?: boolean }
+local function resolve_and_execute(action_fn, opts)
+  opts = opts or {}
   local bufnr = vim.api.nvim_get_current_buf()
   local current_path = vim.api.nvim_buf_get_name(bufnr)
   local targets = {}
@@ -256,7 +329,60 @@ local function resolve_and_execute(action_fn)
     end
 
     if #targets == 0 then
-      vim.notify("No alternate file found", vim.log.levels.INFO)
+      if opts.create_if_missing then
+        local suggested = M.suggest_alternate(current_path)
+        local rel_suggested = vim.fn.fnamemodify(suggested, ":.")
+
+        local choice_create = string.format("Create '%s'", rel_suggested)
+        local choice_custom = "Specify custom path..."
+        local choice_cancel = "Cancel"
+
+        local function handle_choice(choice)
+          if choice == choice_create then
+            local parent = vim.fs.dirname(suggested)
+            if parent and parent ~= "" and not vim.uv.fs_stat(parent) then
+              vim.fn.mkdir(parent, "p")
+            end
+            action_fn(suggested)
+          elseif choice == choice_custom then
+            vim.ui.input({
+              prompt = "Path to create: ",
+              default = rel_suggested,
+            }, function(custom_input)
+              if custom_input and vim.trim(custom_input) ~= "" then
+                local root = vim.fs.root(current_path, { ".git", ".neoconf.json", "CMakeLists.txt" }) or vim.fn.getcwd()
+                local full_custom = vim.fs.normalize(vim.fs.joinpath(root, vim.trim(custom_input)))
+                local parent = vim.fs.dirname(full_custom)
+                if parent and parent ~= "" and not vim.uv.fs_stat(parent) then
+                  vim.fn.mkdir(parent, "p")
+                end
+                action_fn(full_custom)
+              end
+            end)
+          end
+        end
+
+        local choices = { choice_create, choice_custom, choice_cancel }
+        if snacks then
+          snacks.picker.select(choices, {
+            prompt = "Alternate file not found. Create it?:",
+          }, function(choice)
+            if choice then
+              handle_choice(choice)
+            end
+          end)
+        else
+          vim.ui.select(choices, {
+            prompt = "Alternate file not found. Create it?:",
+          }, function(choice)
+            if choice then
+              handle_choice(choice)
+            end
+          end)
+        end
+      else
+        vim.notify("No alternate file found", vim.log.levels.INFO)
+      end
     elseif #targets == 1 then
       action_fn(targets[1])
     elseif snacks then
@@ -330,5 +456,7 @@ function M.switch_smart_vsplit()
     vim.cmd("vsplit " .. vim.fn.fnameescape(t))
   end)
 end
+
+M.resolve_and_execute = resolve_and_execute
 
 return M
