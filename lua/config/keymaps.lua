@@ -75,6 +75,43 @@ vim.keymap.set("n", "<leader>sf", function()
 end, { desc = "Grep in Buffer Directory" })
 
 -- ---------------------------------------------
+--  Backports
+-- ---------------------------------------------
+-- Neovim 0.13 line text objects:
+--   al: "all lines" (entire buffer, linewise)
+--   il: "inner line" (current line without leading/trailing whitespace, charwise)
+
+-- 'al' text object (all lines / entire buffer)
+-- Enables: val (select all), dal (delete all), yal (yank all), cal (change all), >al, =al, etc.
+vim.keymap.set({ "x", "o" }, "al", function()
+  vim.cmd("normal! ggVG")
+end, { desc = "All lines (entire buffer)" })
+
+-- 'il' text object (inner line, excluding leading & trailing whitespace)
+-- Enables: vil (select text), dil (delete text), yil (yank text), cil (change text)
+vim.keymap.set({ "x", "o" }, "il", function()
+  local line = vim.api.nvim_get_current_line()
+  local first = line:find("%S")
+  if not first then
+    return
+  end
+  local last = line:match("^.*%S()") - 1
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+
+  local m = vim.fn.mode()
+  if m == "V" or m == "\22" then
+    vim.cmd("normal! v")
+  elseif m ~= "v" then
+    vim.api.nvim_win_set_cursor(0, { row, first - 1 })
+    vim.cmd("normal! v")
+  else
+    vim.api.nvim_win_set_cursor(0, { row, first - 1 })
+    vim.cmd("normal! o")
+  end
+  vim.api.nvim_win_set_cursor(0, { row, last - 1 })
+end, { desc = "Inner line" })
+
+-- ---------------------------------------------
 --  Files
 -- ---------------------------------------------
 vim.keymap.set({ "n", "x" }, "<leader>fs", "<cmd>w<cr>", { desc = "Save file" })
