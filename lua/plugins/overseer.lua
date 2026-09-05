@@ -21,6 +21,14 @@ return {
     }
     opts.component_aliases = opts.component_aliases or {}
 
+    -- Default components applied to all tasks (adds on_start_notify for UI feedback on launch)
+    opts.component_aliases.default = {
+      "on_exit_set_status",
+      "on_complete_notify",
+      { "on_complete_dispose", require_view = { "SUCCESS", "FAILURE" } },
+      "on_start_notify",
+    }
+
     -- Tasks coming from .vscode/tasks.json use the "default_vscode" alias
     -- Alternatively: default (instead of default_vscode) will apply this to all
     -- tasks
