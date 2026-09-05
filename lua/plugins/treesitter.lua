@@ -20,6 +20,7 @@ return {
         "javascript",
         "json",
         "lua",
+        "mermaid",
         "python",
         "regex",
         "toml",
