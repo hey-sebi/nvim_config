@@ -17,15 +17,53 @@ return {
   {
     "neovim/nvim-lspconfig",
     init = function()
-      -- Suppress benign clangd AST errors for newly created / unindexed header files
-      local orig_inlay_hint = vim.lsp.handlers["textDocument/inlayHint"]
-      vim.lsp.handlers["textDocument/inlayHint"] = function(err, result, ctx, config)
-        if err and (err.code == -32602 or (err.message and err.message:find("trying to get AST"))) then
+      -- Suppress benign clangd AST errors for newly created / unindexed files
+      local function is_benign_clangd_error(err)
+        if not err then
+          return false
+        end
+        if err.message and (err.message:find("trying to get AST") or err.message:find("non%-added document")) then
+          return true
+        end
+        return false
+      end
+
+      -- 1. Wrap all existing LSP method handlers
+      for method, handler in pairs(vim.lsp.handlers) do
+        vim.lsp.handlers[method] = function(err, result, ctx, config)
+          if is_benign_clangd_error(err) then
+            return
+          end
+          return handler(err, result, ctx, config)
+        end
+      end
+
+      -- 2. Catch any newly registered handlers dynamically
+      local mt = getmetatable(vim.lsp.handlers) or {}
+      local orig_newindex = mt.__newindex
+      mt.__newindex = function(t, k, v)
+        local wrapped_fn = function(err, result, ctx, config)
+          if is_benign_clangd_error(err) then
+            return
+          end
+          return v(err, result, ctx, config)
+        end
+        if orig_newindex then
+          orig_newindex(t, k, wrapped_fn)
+        else
+          rawset(t, k, wrapped_fn)
+        end
+      end
+      setmetatable(vim.lsp.handlers, mt)
+
+      -- 3. Safety net: intercept via vim.notify
+      local orig_notify = vim.notify
+      ---@diagnostic disable-next-line: duplicate-set-field
+      vim.notify = function(msg, level, opts)
+        if type(msg) == "string" and (msg:find("trying to get AST") or msg:find("non%-added document")) then
           return
         end
-        if orig_inlay_hint then
-          return orig_inlay_hint(err, result, ctx, config)
-        end
+        return orig_notify(msg, level, opts)
       end
     end,
     opts = {
@@ -57,5 +95,25 @@ return {
         },
       },
     },
+  },
+  {
+    "folke/noice.nvim",
+    opts = function(_, opts)
+      opts.routes = opts.routes or {}
+      table.insert(opts.routes, {
+        filter = {
+          event = "notify",
+          find = "trying to get AST",
+        },
+        opts = { skip = true },
+      })
+      table.insert(opts.routes, {
+        filter = {
+          event = "notify",
+          find = "non%-added document",
+        },
+        opts = { skip = true },
+      })
+    end,
   },
 }
