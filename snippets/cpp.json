@@ -1,0 +1,123 @@
+{
+  "Range-for const ref": {
+    "prefix": ["forcr", "foreach", "for"],
+    "body": [
+      "for (const auto& ${1:item} : ${2:container}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Range-based for loop by const reference"
+  },
+  "Range-for forwarding ref": {
+    "prefix": ["forfr", "foruniv"],
+    "body": [
+      "for (auto&& ${1:item} : ${2:container}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Range-based for loop by forwarding/universal reference (for ranges/views/mutating)"
+  },
+  "Range-for by value": {
+    "prefix": ["forval"],
+    "body": [
+      "for (${1:auto} ${2:item} : ${3:container}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Range-based for loop by value (for primitives/small copyable types)"
+  },
+  "Range-for with index (C++23)": {
+    "prefix": ["forenum"],
+    "body": [
+      "for (const auto& [${1:idx}, ${2:item}] : std::views::enumerate(${3:container})) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "C++23 range-based for loop with index (std::views::enumerate)"
+  },
+  "Indexed for loop": {
+    "prefix": ["fori"],
+    "body": [
+      "for (std::size_t ${1:i} = 0; $1 < ${2:count}; ++$1) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Standard indexed for loop (std::size_t)"
+  },
+  "Constexpr noexcept lambda": {
+    "prefix": ["clam"],
+    "body": [
+      "[${1}](${2}) constexpr noexcept -> ${3:auto} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "constexpr noexcept lambda"
+  },
+  "Generic lambda": {
+    "prefix": ["lam"],
+    "body": [
+      "[${1}](${2:auto&&... args}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Generic lambda"
+  },
+  "Modern class (Rule of 5)": {
+    "prefix": ["class"],
+    "body": [
+      "class ${1:ClassName} {",
+      "public:",
+      "\t${1:ClassName}() = default;",
+      "\tvirtual ~${1:ClassName}() = default;",
+      "",
+      "\t${1:ClassName}(const ${1:ClassName}&) = default;",
+      "\t${1:ClassName}& operator=(const ${1:ClassName}&) = default;",
+      "\t${1:ClassName}(${1:ClassName}&&) noexcept = default;",
+      "\t${1:ClassName}& operator=(${1:ClassName}&&) noexcept = default;",
+      "",
+      "private:",
+      "\t$0",
+      "};"
+    ],
+    "description": "Polymorphic class definition with modern Rule of 5 defaults"
+  },
+  "Modern struct": {
+    "prefix": ["struct"],
+    "body": [
+      "struct ${1:StructName} {",
+      "\t$0",
+      "};"
+    ],
+    "description": "Aggregate struct definition"
+  },
+  "Make unique pointer": {
+    "prefix": ["mku"],
+    "body": [
+      "auto ${1:ptr} = std::make_unique<${2:Type}>(${3});"
+    ],
+    "description": "std::make_unique helper"
+  },
+  "Make shared pointer": {
+    "prefix": ["mks"],
+    "body": [
+      "auto ${1:ptr} = std::make_shared<${2:Type}>(${3});"
+    ],
+    "description": "std::make_shared helper"
+  },
+  "Pragma once": {
+    "prefix": ["once"],
+    "body": [
+      "#pragma once",
+      "",
+      "$0"
+    ],
+    "description": "#pragma once header guard"
+  },
+  "Println (C++23)": {
+    "prefix": ["print", "println"],
+    "body": [
+      "std::println(\"${1:{}}\", ${2});"
+    ],
+    "description": "C++23 std::println"
+  }
+}
