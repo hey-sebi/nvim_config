@@ -99,7 +99,7 @@ return {
       desc = "Rerun last task",
     },
     {
-      "<leader>oW",
+      "<leader>os",
       function()
         local overseer = require("overseer")
         local tasks = overseer.list_tasks({ recent_first = true })
