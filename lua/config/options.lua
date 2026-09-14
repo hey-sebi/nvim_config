@@ -15,6 +15,9 @@ vim.g.root_spec = { "cwd" }
 -- Always keep 10 lines visible above/below cursor
 vim.opt.scrolloff = 10
 
+-- Disable smooth scroll animations (fixes <C-d>zz / <C-u>zz race condition on first scroll)
+vim.g.snacks_scroll = false
+
 if vim.g.neovide then
   -- Neovide settings
   vim.g.neovide_scale_factor = 1.0
