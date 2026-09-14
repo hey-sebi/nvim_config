@@ -18,11 +18,21 @@ vim.opt.scrolloff = 10
 -- Disable smooth scroll animations (fixes <C-d>zz / <C-u>zz race condition on first scroll)
 vim.g.snacks_scroll = false
 
+
+-- Spell checking languages: both English and German
+vim.opt.spelllang = { "en", "de" }
+
 if vim.g.neovide then
   -- Neovide settings
   vim.g.neovide_scale_factor = 1.0
   -- Use the "NL" (No Ligatures) variant of JetBrains Mono to disable ligatures
-  vim.o.guifont = "JetBrainsMonoNL Nerd Font:h12"
+  vim.o.guifont = "JetBrainsMonoNL Nerd Font:h11"
+
+  -- Default working directory to ~/dev when Neovide is launched without explicit file/dir args
+  local dev_dir = vim.fs.normalize("~/dev")
+  if vim.fn.argc() == 0 and vim.fn.isdirectory(dev_dir) == 1 then
+    vim.fn.chdir(dev_dir)
+  end
 end
 -- Set LSP log level to warn to prevent huge log files
 vim.lsp.set_log_level("warn")
