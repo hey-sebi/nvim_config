@@ -43,6 +43,31 @@ vim.keymap.set("x", "<leader>rc", [["yy:let @/ = '\V' . escape(@", '/\')<CR>:set
 -- ---------------------------------------------
 --  Quality of life
 -- ---------------------------------------------
+-- Global Memo / Cheat Sheet scratchpad (persisted to ~/memo.md)
+-- Complements LazyVim's project-specific scratch buffer (<leader>.)
+vim.keymap.set("n", "<leader>,", function()
+  Snacks.scratch({
+    file = vim.fs.normalize("~/memo.md"),
+    name = "Memo",
+    ft = "markdown",
+    autowrite = true,
+    win = {
+      width = 0.8,
+      height = 0.75,
+      border = "rounded",
+      title = " Memo / Cheat Sheet (~/memo.md) ",
+      title_pos = "center",
+      wo = {
+        number = true,
+        relativenumber = false,
+        wrap = true,
+        cursorline = true,
+        spell = false,
+      },
+    },
+  })
+end, { desc = "Toggle Global Memo / Scratchpad" })
+
 -- Recenter after C-d or C-u
 vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Scroll down and recenter" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Scroll up and recenter" })
