@@ -31,6 +31,8 @@ return {
         },
         ["<C-n>"] = { "select_next", "fallback" },
         ["<C-p>"] = { "select_prev", "fallback" },
+        -- Manual completion trigger (classic Vim omni-completion keymap)
+        ["<C-x><C-o>"] = { "show", "show_documentation", "hide_documentation" },
         -- If we manually scroll down the menu with C-n, hitting Enter will
         -- accept it. Otherwise, it just inserts a newline.
         ["<CR>"] = { "accept", "fallback" },
@@ -43,7 +45,8 @@ return {
       signature = { enabled = true },
       sources = {
         -- Priority ordering: LSP > buffer > ripgrep
-        default = { "lsp", "path", "snippets", "buffer", "ripgrep" },
+        -- default = { "lsp", "path", "snippets", "buffer", "ripgrep" },
+        default = { "lsp", "path", "snippets", "buffer" },
         providers = {
           lsp = {
             score_offset = 0,
