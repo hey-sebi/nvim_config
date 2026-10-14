@@ -139,7 +139,30 @@ end, { desc = "Inner line" })
 -- ---------------------------------------------
 --  Files
 -- ---------------------------------------------
-vim.keymap.set({ "n", "x" }, "<leader>fs", "<cmd>w<cr>", { desc = "Save file" })
+vim.keymap.set({ "n", "x" }, "<leader>fs", function()
+  local bufname = vim.api.nvim_buf_get_name(0)
+  if bufname ~= "" then
+    vim.cmd("w")
+    return
+  end
+
+  vim.ui.input({
+    prompt = "Save file as: ",
+    completion = "file",
+  }, function(input)
+    if not input or input:match("^%s*$") then
+      return
+    end
+    local dir = vim.fs.dirname(input)
+    if dir and dir ~= "" and dir ~= "." and vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, "p")
+    end
+    local ok, err = pcall(vim.cmd, "write " .. vim.fn.fnameescape(input))
+    if not ok then
+      vim.notify(err, vim.log.levels.ERROR)
+    end
+  end)
+end, { desc = "Save file" })
 vim.keymap.set({ "n", "x" }, "<leader>fS", "<cmd>!silent wa<cr>", { desc = "Save all files" })
 vim.keymap.set("n", "<leader>fo", ":e ", { desc = "Open file (Root Dir)", silent = false })
 
