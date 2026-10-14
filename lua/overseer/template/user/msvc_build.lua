@@ -22,7 +22,7 @@ local function detect_backend()
     end
   end
 
-  -- 2. Try to find .vscode/build.bat (legacy setup)
+  -- 2. Try to find build.bat (legacy setup in scripts/, script/, .vscode/, or root)
   local bat_matches = vim.fs.find("build.bat", {
     path = root,
     upward = false,
@@ -30,7 +30,7 @@ local function detect_backend()
   })
   for _, match in ipairs(bat_matches) do
     local parent = vim.fn.fnamemodify(match, ":h:t"):lower()
-    if parent == ".vscode" then
+    if parent == ".vscode" or parent == "scripts" or parent == "script" or fs.normalize(match) == fs.normalize(fs.joinpath(root, "build.bat")) then
       return {
         type = "bat",
         path = fs.normalize(match),
@@ -44,14 +44,15 @@ end
 
 --- Get command and cwd configured for the specific backend.
 --- @param backend table
---- @param task_type string "build" | "configure" | "clean-configure" | "test"
+--- @param task_type string "fast-build" | "build" | "configure" | "clean-configure" | "test"
 --- @param preset string "Debug" | "Release" | "RelWithDebInfo"
---- @param extra_args string|nil target name (e.g. "all")
+--- @param extra_args string|nil target name and optional ninja flags (e.g. "all -j4", "foo -j4")
 --- @return table|nil
 local function get_task_command(backend, task_type, preset, extra_args)
+  local ninja_args = extra_args or "all -j4"
   if backend.type == "ps1" then
     local ps_preset = "msvc-x64_x86-" .. preset:lower()
-    if task_type == "build" then
+    if task_type == "build" or task_type == "fast-build" then
       return {
         cmd = {
           "powershell",
@@ -65,7 +66,7 @@ local function get_task_command(backend, task_type, preset, extra_args)
           "-Preset",
           ps_preset,
           "-ExtraArgs",
-          extra_args or "all",
+          ninja_args,
         },
       }
     elseif task_type == "configure" then
@@ -115,17 +116,26 @@ local function get_task_command(backend, task_type, preset, extra_args)
       }
     end
   elseif backend.type == "bat" then
-    if task_type == "build" then
+    if task_type == "fast-build" then
+      -- Uses "skip-config" to directly invoke Ninja without re-running CMake configuration
       return {
-        cmd = { backend.path, "msvc", "x64_x86", preset, extra_args or "all" },
+        cmd = { backend.path, "skip-config", "x64_x86", ninja_args },
+        cwd = backend.root,
+      }
+    elseif task_type == "build" then
+      return {
+        cmd = { backend.path, "msvc", "x64_x86", preset, ninja_args },
+        cwd = backend.root,
       }
     elseif task_type == "configure" then
       return {
         cmd = { backend.path, "msvc", "x64_x86", preset, "none" },
+        cwd = backend.root,
       }
     elseif task_type == "clean-configure" then
       return {
         cmd = { backend.path, "msvc", "x64_x86", preset, "clean" },
+        cwd = backend.root,
       }
     elseif task_type == "test" then
       return {
@@ -152,11 +162,39 @@ return {
     }
 
     local templates = {
-      -- 1. Build templates
+      -- 1. Fast build target with Ninja (skips CMake config, limits CPU via -j4)
+      {
+        name = "MSVC: Fast Build Target (Ninja -j4)",
+        desc = "Fast Ninja build (skips CMake config), e.g. 'foo -j4' or 'all -j4'",
+        params = {
+          extra_args = {
+            type = "string",
+            name = "Target & Ninja args",
+            default = "all -j4",
+            desc = "Target name and flags (e.g. 'foo -j4', 'all -j4')",
+            optional = false,
+          },
+        },
+        builder = function(params)
+          local args = (params.extra_args and params.extra_args ~= "") and params.extra_args or "all -j4"
+          if not args:match("%-j%s*%d+") then
+            args = args .. " -j4"
+          end
+          local config = get_task_command(backend, "fast-build", "RelWithDebInfo", args)
+          return {
+            cmd = config.cmd,
+            cwd = config.cwd,
+            errorformat = errorformat,
+            components = components,
+          }
+        end,
+      },
+
+      -- 2. Full Build templates (also default to -j4 to prevent pegging 100% CPU)
       {
         name = "MSVC: Build (RelWithDebInfo)",
         builder = function()
-          local config = get_task_command(backend, "build", "RelWithDebInfo", "all")
+          local config = get_task_command(backend, "build", "RelWithDebInfo", "all -j4")
           return {
             cmd = config.cmd,
             cwd = config.cwd,
@@ -168,7 +206,7 @@ return {
       {
         name = "MSVC: Build (Debug)",
         builder = function()
-          local config = get_task_command(backend, "build", "Debug", "all")
+          local config = get_task_command(backend, "build", "Debug", "all -j4")
           return {
             cmd = config.cmd,
             cwd = config.cwd,
@@ -180,7 +218,7 @@ return {
       {
         name = "MSVC: Build (Release)",
         builder = function()
-          local config = get_task_command(backend, "build", "Release", "all")
+          local config = get_task_command(backend, "build", "Release", "all -j4")
           return {
             cmd = config.cmd,
             cwd = config.cwd,
@@ -190,7 +228,7 @@ return {
         end,
       },
 
-      -- 2. Configure templates
+      -- 3. Configure templates
       {
         name = "MSVC: Configure (RelWithDebInfo)",
         builder = function()
@@ -216,7 +254,7 @@ return {
         end,
       },
 
-      -- 3. Test templates
+      -- 4. Test templates
       {
         name = "MSVC: Run Unit Tests (RelWithDebInfo)",
         builder = function()
@@ -230,13 +268,14 @@ return {
         end,
       },
 
-      -- 4. Custom parameter prompt
+      -- 5. Custom parameter prompt (with defaults for all fields)
       {
         name = "MSVC: Custom Task...",
         params = {
           action = {
             type = "enum",
-            choices = { "build", "configure", "clean-configure", "test" },
+            choices = { "fast-build", "build", "configure", "clean-configure", "test" },
+            default = "fast-build",
           },
           preset = {
             type = "enum",
@@ -245,7 +284,7 @@ return {
           },
           extra_args = {
             type = "string",
-            default = "all",
+            default = "all -j4",
           },
         },
         builder = function(params)
