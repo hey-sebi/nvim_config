@@ -34,6 +34,16 @@ return {
           if is_benign_clangd_error(err) then
             return
           end
+          -- Suppress recursive preamble errors specifically on template implementation files (_impl.h)
+          if method == "textDocument/publishDiagnostics" and result and result.diagnostics and result.uri then
+            if result.uri:match("_impl%.h$") then
+              result.diagnostics = vim.tbl_filter(function(d)
+                local code = d.code or ""
+                local msg = d.message or ""
+                return not (code == "pp_including_mainfile_in_preamble" or msg:find("building a preamble"))
+              end, result.diagnostics)
+            end
+          end
           return handler(err, result, ctx, config)
         end
       end
@@ -45,6 +55,16 @@ return {
         local wrapped_fn = function(err, result, ctx, config)
           if is_benign_clangd_error(err) then
             return
+          end
+          -- Suppress recursive preamble errors specifically on template implementation files (_impl.h)
+          if k == "textDocument/publishDiagnostics" and result and result.diagnostics and result.uri then
+            if result.uri:match("_impl%.h$") then
+              result.diagnostics = vim.tbl_filter(function(d)
+                local code = d.code or ""
+                local msg = d.message or ""
+                return not (code == "pp_including_mainfile_in_preamble" or msg:find("building a preamble"))
+              end, result.diagnostics)
+            end
           end
           return v(err, result, ctx, config)
         end
